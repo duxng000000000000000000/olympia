@@ -104,8 +104,9 @@ function saveFinalBank(){localStorage.setItem(FINAL_BANK_KEY,JSON.stringify(fina
 
 let state = null, db = null, auth = null, uid = null, roomCode = initialRoom;
 let cloud = false, joined = false, playerSlot = 0, playerName = '', hostPlayers = {}, submissions = {};
-let stateListener = null, playerListener = null, submissionListener = null, buzzListener = null, starNext = false;
-let processedBuzzQid = '';
+let stateListener = null, playerListener = null, submissionListener = null, buzzListener = null, playerSubmissionListener = null, starNext = false;
+let processedBuzzQid = '', boundSubmissionQid = '', playerSubmissionQid = '';
+let playerHasSubmitted = false, playerSubmitting = false;
 let timerHandle = null, autoLocking = false;
 
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -140,7 +141,11 @@ function bindState(path,callback){
 }
 function bindHostRoom(){
  const root='rooms/'+roomCode;
- bindState(root,()=>{if(state&&state.boost&&state.boost.id)bindSubmissions(state.boost.id)});
+ bindState(root,()=>{
+  const boostId=state&&state.boost&&state.boost.id||'';
+  if(boostId)bindSubmissions(boostId);
+  else if(submissionListener){submissionListener.off();submissionListener=null;boundSubmissionQid='';submissions={};}
+ });
  if(playerListener)playerListener.off();
  playerListener=db.ref(root+'/players');
  playerListener.on('value',snap=>{
@@ -155,9 +160,10 @@ function bindHostRoom(){
   const claims=snap.val()||{};
   const cur=state&&state.final&&state.final.current;
   if(!cur||cur.status!=='steal'||cur.buzzed)return;
-  const claim=claims[cur.qid];
-  if(!claim||processedBuzzQid===cur.qid)return;
-  processedBuzzQid=cur.qid;
+  const claimId=String(cur.buzzId||cur.qid||'');
+  const claim=claimId?claims[claimId]:null;
+  if(!claim||processedBuzzQid===claimId)return;
+  processedBuzzQid=claimId;
   const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));
   next.final.current.buzzed=Number(claim.slot);
   next.final.current.status='steal-answer';
@@ -167,14 +173,38 @@ function bindHostRoom(){
  });
 }
 function bindSubmissions(qid){
- if(!cloud||!db||!roomCode)return;
+ if(!cloud||!db||!roomCode||!qid)return;
+ if(submissionListener&&boundSubmissionQid===qid)return;
  if(submissionListener)submissionListener.off();
+ boundSubmissionQid=qid;
  submissionListener=db.ref('rooms/'+roomCode+'/submissions/boost/'+qid);
- submissionListener.on('value',snap=>{submissions=snap.val()||{};render()});
+ submissionListener.on('value',snap=>{
+  if(boundSubmissionQid!==qid)return;
+  submissions=snap.val()||{};render();
+ },err=>{console.error('Boost submissions listener:',err);toast('Lỗi đồng bộ đáp án: '+err.message)});
+}
+function bindPlayerSubmission(qid){
+ if(!joined||!cloud||!db||!uid||!qid)return;
+ if(playerSubmissionListener&&playerSubmissionQid===qid)return;
+ if(playerSubmissionListener)playerSubmissionListener.off();
+ playerSubmissionQid=qid;playerHasSubmitted=false;
+ playerSubmissionListener=db.ref('rooms/'+roomCode+'/submissions/boost/'+qid+'/'+uid);
+ playerSubmissionListener.on('value',snap=>{
+  if(playerSubmissionQid!==qid)return;
+  playerHasSubmitted=snap.exists();render();
+ },err=>{console.error('Player submission listener:',err);toast('Không thể kiểm tra trạng thái đáp án: '+err.message)});
+}
+function syncPlayerSubmission(){
+ if(mode!=='player'||!joined)return;
+ const b=state&&state.boost;
+ if(state&&state.phase==='boost'&&b&&b.active&&b.id){bindPlayerSubmission(b.id);return;}
+ if(playerSubmissionListener)playerSubmissionListener.off();
+ playerSubmissionListener=null;playerSubmissionQid='';playerHasSubmitted=false;playerSubmitting=false;
 }
 function screenUrl(){return location.origin+location.pathname+'?mode=screen&room='+encodeURIComponent(roomCode)}
 function playerUrl(){return location.origin+location.pathname+'?mode=player&room='+encodeURIComponent(roomCode)}
 function makeCode(){return Math.random().toString(36).slice(2,8).toUpperCase()}
+function makeBuzzId(){return 'buzz-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9)}
 async function createRoom(){
  const ok=cloud||await connectCloud();
  roomCode=makeCode();state=defaultState();state.roomCode=roomCode;
@@ -312,8 +342,8 @@ function renderPlayer(){
  if(!joined) return renderPlayerJoin(cloud);
  const b=state.boost||{};
  if(state.phase==='boost'&&b.active){
-  const submitted=$('app').dataset.submitted==='yes';
-  body='<div class="label">PHẦN THI TĂNG TỐC</div><div class="player-q">'+esc(b.question)+'</div><div class="timer" data-timer="boost">--</div>'+(submitted?'<div class="callout">Đã gửi câu trả lời. Hãy chờ MC công bố kết quả.</div>':'<form id="answer-form"><div class="field"><label>Đáp án của bạn</label><textarea class="answer-input" name="answer" required maxlength="240" placeholder="Nhập câu trả lời..."></textarea></div><button class="btn primary" style="width:100%" type="submit">GỬI ĐÁP ÁN</button></form>');
+  const submitted=playerHasSubmitted&&playerSubmissionQid===b.id;
+  body='<div class="label">PHẦN THI TĂNG TỐC</div><div class="player-q">'+esc(b.question)+'</div><div class="timer" data-timer="boost">--</div>'+(submitted?'<div class="callout">Đã gửi câu trả lời. Hãy chờ MC công bố kết quả.</div>':'<form id="answer-form"><div class="field"><label>Đáp án của bạn</label><textarea class="answer-input" name="answer" required maxlength="240" placeholder="Nhập câu trả lời..."></textarea></div><button class="btn primary" style="width:100%" type="submit" '+(playerSubmitting?'disabled':'')+'>'+(playerSubmitting?'ĐANG GỬI...':'GỬI ĐÁP ÁN')+'</button></form>');
  }else if(state.phase==='final'){
   const cur=state.final&&state.final.current;
   if(cur&&cur.status==='steal'&&playerSlot!==Number(cur.slot)){
@@ -358,15 +388,23 @@ async function joinRoom(){
  const occupied=Object.keys(people).some(k=>k!==uid&&Number(people[k].slot)===slot);
  if(occupied){toast('Số báo danh này đã có người sử dụng');return}
  await db.ref(root+'/players/'+uid).set({slot:slot,name:name,joinedAt:Date.now()});
- roomCode=code;playerSlot=slot;playerName=name;joined=true;state=snap.val();bindState(root,render);render();
+ roomCode=code;playerSlot=slot;playerName=name;joined=true;state=normalizeState(snap.val());bindState(root,()=>syncPlayerSubmission());syncPlayerSubmission();render();
 }
 async function submitAnswer(form){
- if(!cloud||!db||!state||!state.boost||!state.boost.active)return;
+ if(!cloud||!db||!state||!state.boost||!state.boost.active||playerSubmitting)return;
+ const b=state.boost;
+ if(playerHasSubmitted&&playerSubmissionQid===b.id){toast('Bạn đã gửi đáp án cho câu này rồi');return;}
  const answer=String(new FormData(form).get('answer')||'').trim();if(!answer)return;
- const b=state.boost;if(Date.now()>(b.startedAt+b.duration*1000)){toast('Đã hết giờ');return}
- const ref=db.ref('rooms/'+roomCode+'/submissions/boost/'+b.id+'/'+uid);
- const result=await ref.transaction(current=>current||{slot:playerSlot,name:playerName,answer:answer,submittedAt:firebase.database.ServerValue.TIMESTAMP});
- if(result.committed){$('app').dataset.submitted='yes';render();toast('Đã gửi đáp án!')}else toast('Bạn đã gửi đáp án cho câu này rồi');
+ if(Date.now()>(b.startedAt+b.duration*1000)){toast('Đã hết giờ');return}
+ playerSubmitting=true;render();
+ try{
+  const ref=db.ref('rooms/'+roomCode+'/submissions/boost/'+b.id+'/'+uid);
+  const submission={slot:playerSlot,name:playerName,answer:answer,submittedAt:firebase.database.ServerValue.TIMESTAMP};
+  const result=await ref.transaction(current=>current==null?submission:undefined);
+  playerHasSubmitted=true;
+  if(result.committed)toast('Đã gửi đáp án!');else toast('Bạn đã gửi đáp án cho câu này rồi');
+ }catch(err){console.error(err);toast('Không gửi được đáp án: '+err.message)}
+ finally{playerSubmitting=false;render();}
 }
 async function startBoostQuestion(id){
  const q=boostBank.find(x=>x.id===id);if(!q)return;
@@ -402,7 +440,7 @@ async function chooseFinalPackage(points){
  if(!available.length){toast('Gói '+points+' điểm đã hết câu hỏi chưa dùng');return}
  const q=available[Math.floor(Math.random()*available.length)];
  const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(f));next.final.used=Array.isArray(next.final.used)?next.final.used:[];next.final.used.push(q.id);if(star){next.final.starUsed=Array.isArray(next.final.starUsed)?next.final.starUsed:[false,false,false,false,false];next.final.starUsed[slot-1]=true;}
- next.final.current={qid:q.id,question:q.q,slot:slot,points:points,star:star,status:'asking',duration:60,startedAt:Date.now(),buzzed:null,mainJudged:false,completed:false};
+ next.final.current={qid:q.id,buzzId:makeBuzzId(),question:q.q,slot:slot,points:points,star:star,status:'asking',duration:60,startedAt:Date.now(),buzzed:null,mainJudged:false,completed:false};
  await saveState(next);starNext=false;
 }
 async function judgeMain(correct){
@@ -417,8 +455,10 @@ async function buzz(slot){
  const c=state.final.current;
  if(c.status!=='steal'||c.buzzed||Number(slot)===Number(c.slot))return;
  if(mode==='player'&&cloud&&db&&roomCode){
-  const ref=db.ref('rooms/'+roomCode+'/buzz/'+c.qid);
-  const result=await ref.transaction(current=>current||{slot:Number(slot),uid:uid,name:playerName,claimedAt:firebase.database.ServerValue.TIMESTAMP});
+  const claimId=String(c.buzzId||c.qid);
+  const ref=db.ref('rooms/'+roomCode+'/buzz/'+claimId);
+  const claim={slot:Number(slot),uid:uid,name:playerName,claimedAt:firebase.database.ServerValue.TIMESTAMP};
+  const result=await ref.transaction(current=>current==null?claim:undefined);
   if(result.committed)toast('Đã ghi nhận lượt bấm chuông! Chờ MC xác nhận.');
   else toast('Rất tiếc, người khác đã bấm chuông trước!');
   return;
@@ -528,7 +568,7 @@ function updateTimers(){
  });
 }
 setInterval(updateTimers,250);
-window.addEventListener('beforeunload',()=>{if(stateListener)stateListener.off();if(playerListener)playerListener.off();if(submissionListener)submissionListener.off()});
+window.addEventListener('beforeunload',()=>{if(stateListener)stateListener.off();if(playerListener)playerListener.off();if(submissionListener)submissionListener.off();if(buzzListener)buzzListener.off();if(playerSubmissionListener)playerSubmissionListener.off()});
 (async function init(){
  if(mode==='host'){await initHost()}
  else if(mode==='screen'){await initScreen()}
