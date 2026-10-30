@@ -54,7 +54,7 @@ let bank = loadBank();
 let state = null, db = null, auth = null, uid = null, roomCode = initialRoom;
 let cloud = false, joined = false, playerSlot = 0, playerName = '', hostPlayers = {}, submissions = {};
 let stateListener = null, playerListener = null, submissionListener = null, starNext = false;
-let timerHandle = null;
+let timerHandle = null, autoLocking = false;
 
 function loadBank(){try{const x=JSON.parse(localStorage.getItem(BANK_KEY)||'null');return Array.isArray(x)&&x.length?x:sampleBank.slice()}catch(e){return sampleBank.slice()}}
 function saveBank(){localStorage.setItem(BANK_KEY,JSON.stringify(bank))}
@@ -368,6 +368,11 @@ document.addEventListener('keydown',e=>{
  const n=Number(e.key);if(n>=1&&n<=5)buzz(n);
 });
 function updateTimers(){
+ if(mode==='host'&&state&&state.phase==='boost'&&state.boost&&state.boost.active&&state.boost.startedAt&&!autoLocking&&Date.now()>=state.boost.startedAt+state.boost.duration*1000){
+  autoLocking=true;
+  const nextState=Object.assign({},state);nextState.boost=Object.assign({},state.boost,{active:false});
+  saveState(nextState).finally(()=>{autoLocking=false});
+ }
  document.querySelectorAll('[data-timer]').forEach(el=>{
   let q=null;if(state&&mode==='player'&&state.phase==='boost')q=state.boost;
   else if(state&&mode==='screen'&&state.phase==='boost')q=state.boost;
