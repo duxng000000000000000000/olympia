@@ -1,118 +1,585 @@
-# Đường đua tri thức
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07152f">
+<title>Đường đua tri thức</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='85'%3E%E2%AD%90%3C/text%3E%3C/svg%3E">
+<style>
+:root{--navy:#07152f;--navy2:#0b2450;--blue:#1264c7;--cyan:#54d9ff;--gold:#ffd36a;--gold2:#f4a928;--white:#f7f9ff;--muted:#9eafce;--panel:#10284e;--line:#24436f;--red:#ff647c;--green:#4be0a0}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:"Be Vietnam Pro",system-ui,sans-serif;background:radial-gradient(ellipse at 50% -20%,#1b4c86 0%,var(--navy) 55%);color:var(--white)}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}a{color:var(--cyan)}.wrap{max-width:1440px;margin:auto;padding:24px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.brand{display:flex;gap:12px;align-items:center}.brand-mark{width:46px;height:46px;border-radius:14px;background:linear-gradient(145deg,var(--gold),#f28b22);display:grid;place-items:center;color:#18223a;font-size:25px;box-shadow:0 8px 30px #f4a92844}.brand h1{font-size:18px;line-height:1.2;margin:0;font-weight:900;letter-spacing:.04em}.brand small{color:var(--muted);font-size:11px;letter-spacing:.18em;text-transform:uppercase}.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pill{border:1px solid var(--line);padding:8px 12px;border-radius:99px;color:var(--muted);font-size:12px}.pill b{color:var(--green)}.btn{padding:11px 16px;border-radius:11px;background:#1a3a68;color:white;font-weight:700;border:1px solid #315888;transition:.15s}.btn:hover{filter:brightness(1.2);transform:translateY(-1px)}.btn.primary{background:linear-gradient(135deg,#1687ef,#1254bd);border-color:#58b4ff;box-shadow:0 8px 22px #1477df44}.btn.gold{background:linear-gradient(135deg,#ffdf86,#f0a52b);color:#18233a;border-color:#ffe5a6}.btn.red{background:#7f2840;border-color:#be4964}.btn.green{background:#116447;border-color:#2ca87c}.btn.ghost{background:transparent}.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}.panel{background:linear-gradient(145deg,#122b51ee,#0b1d39ee);border:1px solid #31527e;border-radius:18px;padding:20px;box-shadow:0 18px 50px #0003}.panel h2,.panel h3{margin:0 0 14px}.muted{color:var(--muted)}.tiny{font-size:12px}.label{font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--cyan);text-transform:uppercase;margin-bottom:8px}.grid{display:grid;gap:16px}.grid.two{grid-template-columns:1.1fr .9fr}.grid.three{grid-template-columns:repeat(3,1fr)}.score-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.score-card{background:#0a1b35;border:1px solid var(--line);border-radius:14px;padding:14px;position:relative;overflow:hidden}.score-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold)}.score-card .num{font-size:11px;color:var(--muted);letter-spacing:.1em}.score-card .name{font-weight:800;margin:6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.score-card .score{font-size:29px;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums}.score-card .online{font-size:10px;color:var(--green)}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.section-head h2{margin:0}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.field{display:flex;flex-direction:column;gap:6px;margin:9px 0}.field label{color:var(--muted);font-size:12px;font-weight:700}.field input,.field select,.field textarea{width:100%;border:1px solid #31527e;background:#071a35;color:white;border-radius:10px;padding:11px 12px;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #54d9ff22}.field textarea{min-height:90px;resize:vertical}.field.inline{min-width:130px}.statline{display:flex;gap:10px;flex-wrap:wrap}.stat{padding:8px 12px;background:#081a34;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--muted)}.stat b{color:white}.question-list{display:grid;gap:8px;max-height:310px;overflow:auto}.q-item{background:#0a1c37;border:1px solid #27456f;border-radius:12px;padding:11px 12px;display:flex;align-items:center;gap:10px}.q-item .qcopy{flex:1;min-width:0}.q-item strong{color:var(--gold);font-size:12px}.q-item p{margin:4px 0 0;font-size:13px}.tag{font-size:10px;border:1px solid #53739e;padding:4px 7px;border-radius:99px;color:#bfd5f3;white-space:nowrap}.divider{height:1px;background:var(--line);margin:16px 0}.callout{padding:12px 14px;background:#092744;border-left:3px solid var(--cyan);border-radius:8px;color:#d7e9ff;font-size:13px;line-height:1.6}.warning{border-left-color:var(--gold);background:#382b16}.danger{border-left-color:var(--red);background:#391a2b}.empty{padding:26px;text-align:center;color:var(--muted);border:1px dashed #41618c;border-radius:14px}.package-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.package{padding:18px 8px;border-radius:14px;background:linear-gradient(145deg,#174b84,#0d2b52);border:1px solid #4e91d4;color:white;font-size:25px;font-weight:900}.package small{display:block;font-size:10px;letter-spacing:.1em;color:#b8d9ff;margin-top:4px}.package:hover{border-color:var(--gold);color:var(--gold)}.package:disabled{opacity:.25}.buzzer-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.buzzer{min-height:58px;background:#3a2447;border:1px solid #a46ba8;color:white;border-radius:12px;font-weight:800}.buzzer:disabled{opacity:.3}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#f4f6ff;color:#0c1d37;padding:12px 18px;border-radius:12px;box-shadow:0 8px 32px #0006;z-index:30;font-weight:700;display:none}.qr{background:white;padding:10px;border-radius:10px;width:max-content}.screen-wrap{min-height:100vh;padding:28px;display:flex;flex-direction:column;gap:20px;background:radial-gradient(ellipse at 50% 0%,#1761a6 0%,#07152f 65%)}.screen-top{display:flex;justify-content:space-between;align-items:center;gap:20px}.screen-logo{font-size:clamp(18px,2vw,30px);font-weight:900;letter-spacing:.12em;color:var(--gold)}.screen-code{font-size:13px;color:#c1d8f6}.screen-scores{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.screen-score{background:#081a36cc;border:1px solid #4d75a5;border-radius:14px;padding:12px;text-align:center}.screen-score .sname{font-size:clamp(12px,1.4vw,19px);font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.screen-score .snum{font-size:clamp(23px,3vw,42px);font-weight:900;color:var(--gold)}.screen-main{flex:1;min-height:45vh;border:2px solid #d7a94e;border-radius:24px;background:linear-gradient(145deg,#123c73dd,#081b39ee);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:clamp(20px,5vw,64px);box-shadow:0 0 60px #ffcf6522,inset 0 0 50px #1f7bd022}.screen-phase{font-size:clamp(12px,1.4vw,20px);letter-spacing:.25em;color:var(--cyan);font-weight:800;text-transform:uppercase}.screen-question{font-size:clamp(24px,4vw,58px);font-weight:800;line-height:1.35;max-width:1120px;margin:22px auto}.screen-sub{color:#c8d8ed;font-size:clamp(14px,1.5vw,20px)}.timer{font-size:clamp(42px,7vw,90px);font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums;text-shadow:0 0 22px #ffbf4e66}.screen-footer{display:flex;justify-content:space-between;align-items:center;color:#a9c2e3;font-size:12px}.player-wrap{min-height:100vh;padding:18px;display:flex;justify-content:center;align-items:flex-start;background:radial-gradient(ellipse at 50% -10%,#1c5793,#07152f 65%)}.player-card{width:100%;max-width:520px;margin:20px auto}.player-card .brand{margin-bottom:18px}.player-card h2{font-size:22px}.player-q{font-size:20px;line-height:1.45;font-weight:800;margin:16px 0}.answer-input{font-size:18px!important;min-height:110px!important}.player-status{font-size:12px;color:var(--muted);margin-top:12px}.hide{display:none!important}.footer-note{text-align:center;color:#7189ad;font-size:11px;margin:20px 0}
 
-Web game thi kiến thức phong cách gameshow, tối ưu cho một máy tính điều khiển + máy chiếu và 5 điện thoại thí sinh.
+.screen-main.has-results{justify-content:flex-start;min-height:0;padding:clamp(16px,2.5vw,34px)}
+.screen-main.has-results .screen-question{font-size:clamp(20px,2.6vw,38px);margin:12px auto}
+.screen-answer-reveal{display:flex;flex-direction:column;gap:5px;align-items:center;background:linear-gradient(135deg,#4b3514,#816021);border:1px solid #f4c766;border-radius:14px;padding:10px 24px;margin:4px auto 14px;min-width:min(520px,100%);max-width:90%}
+.screen-answer-reveal span{font-size:11px;letter-spacing:.2em;color:#ffe4a2;font-weight:800}
+.screen-answer-reveal strong{font-size:clamp(20px,2.5vw,34px);color:#fff;font-weight:900}
+.screen-results{width:100%;max-width:1180px;margin:0 auto;text-align:left}
+.screen-results-head,.screen-result-row{display:grid;grid-template-columns:.55fr 1.2fr 2.6fr .75fr .8fr .7fr;gap:10px;align-items:center}
+.screen-results-head{padding:8px 12px;color:#b7d1f2;font-size:10px;font-weight:900;letter-spacing:.1em}
+.screen-result-row{padding:10px 12px;border:1px solid #45658c;background:#071a35bb;border-radius:10px;margin-bottom:6px;font-size:clamp(11px,1.1vw,15px)}
+.screen-rank{font-size:clamp(18px,1.8vw,25px);color:var(--gold);font-weight:900}
+.screen-player{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.screen-answer{color:#e7f0ff;overflow-wrap:anywhere}
+.screen-time{font-variant-numeric:tabular-nums;color:var(--cyan);font-weight:800}
+.screen-points{color:var(--gold);font-weight:900}
+.screen-verdict{font-size:10px;font-weight:900;letter-spacing:.06em}
+.screen-verdict.is-correct{color:var(--green)}
+.screen-verdict.is-wrong{color:var(--red)}
+.screen-result-row.is-missing{opacity:.5}
+@media(max-width:850px){.screen-results-head,.screen-result-row{grid-template-columns:.45fr 1fr 1.8fr .65fr .7fr .55fr;gap:5px;padding:8px 6px}.screen-answer-reveal{min-width:0;width:95%}}
+@media(max-width:520px){.screen-results-head,.screen-result-row{font-size:9px;grid-template-columns:.35fr .9fr 1.3fr .55fr .6fr .5fr;gap:3px;padding:6px 3px}.screen-results-head{font-size:7px}.screen-verdict{font-size:8px}.screen-answer-reveal strong{font-size:18px}}
+@media(max-width:850px){.wrap{padding:14px}.grid.two{grid-template-columns:1fr}.score-grid{grid-template-columns:repeat(2,1fr)}.score-card:last-child{grid-column:span 2}.screen-wrap{padding:12px}.screen-scores{gap:5px}.screen-score{padding:8px 4px}.top{align-items:flex-start}.top-actions{justify-content:flex-end}.buzzer-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.brand h1{font-size:15px}.brand-mark{width:39px;height:39px}.top{flex-direction:column}.top-actions{justify-content:flex-start}.score-grid{grid-template-columns:1fr 1fr}.screen-top{flex-direction:column}.screen-scores{grid-template-columns:repeat(5,minmax(0,1fr))}.screen-score .sname{font-size:10px}.screen-score .snum{font-size:19px}.package-row{gap:6px}.package{font-size:20px;padding:14px 4px}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div id="app"><div class="wrap"><div class="empty">Đang khởi tạo chương trình...</div></div></div>
+<div id="toast" class="toast"></div>
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const mode = params.get('mode') || 'host';
+const initialRoom = (params.get('room') || '').toUpperCase();
+const LOCAL_KEY = 'olympia-demo-state-v1';
+const LEGACY_BANK_KEY = 'olympia-question-bank-v1';
+const BOOST_BANK_KEY = 'olympia-boost-bank-v1';
+const FINAL_BANK_KEY = 'olympia-final-bank-v2';
+const sampleFinalBank = [
+{id:'s10a',points:10,topic:'Khoa học',q:'Công thức hóa học của nước là gì?',a:'H₂O'},
+{id:'s10b',points:10,topic:'Địa lý',q:'Thủ đô của Nhật Bản là thành phố nào?',a:'Tokyo'},
+{id:'s10c',points:10,topic:'Toán học',q:'Phân số 3/4 tương đương bao nhiêu phần trăm?',a:'75%'},
+{id:'s10d',points:10,topic:'Vật lý',q:'1 kilowatt bằng bao nhiêu watt?',a:'1000 watt'},
+{id:'s10e',points:10,topic:'Thiên văn',q:'Hành tinh nào thường được gọi là Hành tinh Đỏ?',a:'Sao Hỏa'},
+{id:'s20a',points:20,topic:'Sinh học',q:'Trong quá trình quang hợp, thực vật hấp thụ khí nào từ không khí?',a:'Carbon dioxide (CO₂)'},
+{id:'s20b',points:20,topic:'Hóa học',q:'Ký hiệu hóa học Fe là của nguyên tố nào?',a:'Sắt'},
+{id:'s20c',points:20,topic:'Lịch sử',q:'Ngày giải phóng miền Nam, thống nhất đất nước là ngày nào?',a:'30/4/1975'},
+{id:'s20d',points:20,topic:'Toán học',q:'Tổng ba góc trong một tam giác bằng bao nhiêu độ?',a:'180 độ'},
+{id:'s20e',points:20,topic:'Địa lý',q:'Đại dương nào lớn nhất trên Trái Đất?',a:'Thái Bình Dương'},
+{id:'s30a',points:30,topic:'Vật lý',q:'Tốc độ ánh sáng trong chân không xấp xỉ bao nhiêu km/s?',a:'300.000 km/s'},
+{id:'s30b',points:30,topic:'Văn học',q:'Ai là tác giả của Truyện Kiều?',a:'Nguyễn Du'},
+{id:'s30c',points:30,topic:'Sinh học',q:'Một tế bào sinh dưỡng bình thường của người có bao nhiêu nhiễm sắc thể?',a:'46 nhiễm sắc thể'},
+{id:'s30d',points:30,topic:'Vật lý',q:'Định luật Ôm được biểu diễn bằng công thức nào?',a:'U = I × R'},
+{id:'s30e',points:30,topic:'Địa lý',q:'Đỉnh núi nào cao nhất thế giới so với mực nước biển?',a:'Everest'}
+];
+const sampleBoostBank = [
+{id:'b01',topic:'Khoa học',q:'Hành tinh nào gần Mặt Trời nhất?',a:'Sao Thủy'},
+{id:'b02',topic:'Toán học',q:'7 nhân 8 bằng bao nhiêu?',a:'56'},
+{id:'b03',topic:'Địa lý',q:'Việt Nam có bao nhiêu tỉnh, thành phố trực thuộc trung ương theo đơn vị hành chính cấp tỉnh hiện nay?',a:'34'},
+{id:'b04',topic:'Văn học',q:'Ai là tác giả bài thơ Đồng chí?',a:'Chính Hữu'},
+{id:'b05',topic:'Hóa học',q:'Ký hiệu hóa học của vàng là gì?',a:'Au'},
+{id:'b06',topic:'Sinh học',q:'Cơ quan nào bơm máu đi khắp cơ thể người?',a:'Tim'},
+{id:'b07',topic:'Lịch sử',q:'Chiến thắng Điện Biên Phủ diễn ra năm nào?',a:'1954'},
+{id:'b08',topic:'Vật lý',q:'Đơn vị đo cường độ dòng điện là gì?',a:'Ampe'},
+{id:'b09',topic:'Tiếng Anh',q:'Từ tiếng Anh “library” có nghĩa là gì?',a:'Thư viện'},
+{id:'b10',topic:'Toán học',q:'Số nguyên tố nhỏ nhất là số nào?',a:'2'}
+];
+function readBankArray(key){
+ try{const raw=localStorage.getItem(key);if(raw===null)return null;const value=JSON.parse(raw);return Array.isArray(value)?value:null}catch(e){return null}
+}
+function loadFinalBank(){
+ const current=readBankArray(FINAL_BANK_KEY);
+ const source=current!==null?current:(readBankArray(LEGACY_BANK_KEY)||sampleFinalBank);
+ return source.filter(x=>x&&x.q&&x.a&&[10,20,30].includes(Number(x.points))).map((x,i)=>({id:x.id||('final'+i),points:Number(x.points),topic:String(x.topic||'Tổng hợp'),q:String(x.q),a:String(x.a)}));
+}
+function loadBoostBank(){
+ const source=readBankArray(BOOST_BANK_KEY);
+ return (source===null?sampleBoostBank:source).filter(x=>x&&x.q&&x.a).map((x,i)=>({id:x.id||('boost'+i),topic:String(x.topic||'Tổng hợp'),q:String(x.q),a:String(x.a)}));
+}
+let boostBank = loadBoostBank();
+let finalBank = loadFinalBank();
+function saveBoostBank(){localStorage.setItem(BOOST_BANK_KEY,JSON.stringify(boostBank))}
+function saveFinalBank(){localStorage.setItem(FINAL_BANK_KEY,JSON.stringify(finalBank))}
 
-## Tính năng
-- Màn MC: tạo phòng, đổi tên 5 thí sinh, quản lý bảng điểm và ngân hàng câu hỏi.
-- Màn chiếu: hiển thị câu hỏi lớn, đồng hồ đếm ngược và bảng điểm 5 thí sinh.
-- Điện thoại: tham gia bằng mã phòng/QR và gửi đáp án trong phần Tăng tốc.
-- Tăng tốc: MC chọn câu hỏi, mỗi thí sinh gửi tối đa một đáp án cho từng câu; sang câu mới, ô trả lời tự mở lại, không cần tải lại trang. MC đánh dấu đúng/sai. Đáp án xếp theo thời điểm máy chủ nhận: 40 / 30 / 20 / 10 / 0. Đáp án sai nhận 0 điểm.
-- Về đích: tự xếp lượt theo điểm từ cao xuống thấp; mỗi thí sinh có 2 câu; MC chọn gói 10 / 20 / 30 điểm và quyết định đúng/sai.
-- Ngôi sao hy vọng: tối đa một lần mỗi thí sinh; đáp án đúng nhân đôi điểm, sai bị trừ gấp đôi.
-- Giành quyền: khi thí sinh chính trả lời sai, 4 điện thoại còn lại có thể bấm chuông; người đầu tiên được ghi nhận bằng giao dịch nguyên tử. MC cũng có thể bấm tên thí sinh khác hoặc nhấn phím 1–5. MC chấm đúng/sai.
-- Có hai kho câu hỏi độc lập: Tăng tốc (câu hỏi + đáp án, không có gói điểm) và Về đích (mỗi câu thuộc gói 10/20/30). Mỗi kho có chức năng thêm, xóa, nhập và xuất JSON riêng. Có sẵn câu hỏi mẫu cho cả hai phần.
+let state = null, db = null, auth = null, uid = null, roomCode = initialRoom;
+let cloud = false, joined = false, playerSlot = 0, playerName = '', hostPlayers = {}, submissions = {};
+let stateListener = null, playerListener = null, submissionListener = null, buzzListener = null, playerSubmissionListener = null, starNext = false;
+let processedBuzzQid = '', boundSubmissionQid = '', playerSubmissionQid = '';
+let playerHasSubmitted = false, playerSubmitting = false;
+let timerHandle = null, autoLocking = false;
 
-## Chạy thử
-Mở index.html bằng trình duyệt. Khi chưa cấu hình Firebase, giao diện MC và màn chiếu có chế độ demo lưu trong trình duyệt. Chế độ demo không đồng bộ giữa các thiết bị khác nhau.
-
-## Đưa lên GitHub Pages
-1. Vào repository Settings → Pages.
-2. Ở phần Build and deployment, chọn Deploy from a branch.
-3. Chọn branch main, folder /(root), nhấn Save.
-4. Chờ GitHub Pages xuất bản, sau đó mở URL được cung cấp.
-
-- MC: https://USERNAME.github.io/olympia/
-- Màn chiếu: thêm ?mode=screen&room=MA_PHONG
-- Điện thoại: thêm ?mode=player&room=MA_PHONG
-
-## Bật kết nối 5 điện thoại (Firebase Realtime Database)
-GitHub Pages là hosting tĩnh; để 5 thiết bị trao đổi dữ liệu trực tiếp, cần một backend realtime. Ứng dụng dùng Firebase Authentication (Anonymous) và Realtime Database.
-
-1. Tạo project tại https://console.firebase.google.com/.
-2. Thêm ứng dụng Web trong Project Overview → Add app.
-3. Vào Authentication → Sign-in method, bật Anonymous.
-4. Tạo Realtime Database và chọn location phù hợp.
-5. Sao chép firebase-config.js.example thành firebase-config.js, rồi điền thông số Web App từ Firebase:
-
-    window.FIREBASE_CONFIG = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "YOUR_PROJECT",
-      appId: "YOUR_APP_ID"
-    };
-
-6. Đặt firebase-config.js ở cùng thư mục với index.html và deploy lại GitHub Pages.
-7. Trong Realtime Database → Rules, có thể mở file `database.rules.json` trong repository để sao chép toàn bộ cấu hình, hoặc dùng rules mẫu dưới đây; sau đó nhấn Publish. Mỗi lần cập nhật luật chơi có thay đổi Firebase, cần Publish Rules trong Firebase Console (đẩy code lên GitHub không tự cập nhật Firebase):
-
-    {
-      "rules": {
-        "rooms": {
-          "$room": {
-            ".read": "auth != null",
-            ".write": "auth != null && ((!data.exists() && newData.child('hostUid').val() === auth.uid) || data.child('hostUid').val() === auth.uid)",
-            "players": {
-              "$uid": {
-                ".write": "auth != null && auth.uid === $uid && root.child('rooms').child($room).child('state').exists()",
-                ".validate": "newData.hasChildren(['slot', 'name']) && newData.child('slot').isNumber() && newData.child('slot').val() >= 1 && newData.child('slot').val() <= 5"
-              }
-            },
-            "buzz": {
-              ".read": "auth != null",
-              "$question": {
-                ".write": "auth != null && !data.exists() && root.child('rooms').child($room).child('players').child(auth.uid).exists() && root.child('rooms').child($room).child('players').child(auth.uid).child('slot').val() === newData.child('slot').val() && newData.child('uid').val() === auth.uid && root.child('rooms').child($room).child('state').child('phase').val() === 'final' && root.child('rooms').child($room).child('state').child('final').child('current').child('status').val() === 'steal' && root.child('rooms').child($room).child('state').child('final').child('current').child('qid').val() === $question && root.child('rooms').child($room).child('state').child('final').child('current').child('slot').val() !== newData.child('slot').val()",
-                ".validate": "newData.hasChildren(['slot', 'uid', 'name', 'claimedAt']) && newData.child('slot').isNumber() && newData.child('uid').isString() && newData.child('name').isString() && newData.child('claimedAt').isNumber()"
-              }
-            },
-            "submissions": {
-              "boost": {
-                "$question": {
-                  "$uid": {
-                    ".write": "auth != null && auth.uid === $uid && root.child('rooms').child($room).child('players').child(auth.uid).exists() && root.child('rooms').child($room).child('state').child('boost').child('active').val() === true && root.child('rooms').child($room).child('state').child('boost').child('id').val() === $question && !data.exists()",
-                    ".validate": "newData.hasChildren(['slot', 'answer', 'submittedAt'])"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-Firebase configuration in a browser is not a private secret. Database Rules are the important access-control layer. These sample rules reserve state changes to the room creator and allow each authenticated contestant account one submission per speed-round question. Test with a private room before the event; do not enable public read/write access to the whole database.
-
-## Luật và cách chạy
-1. MC mở trang chính, bấm Tạo phòng. Sau khi kết nối Firebase, QR và link tham gia sẽ xuất hiện.
-2. Chiếu URL màn hình với query ?mode=screen&room=... lên projector.
-3. Năm thí sinh quét QR, chọn số báo danh 1–5 và nhập tên.
-4. MC nhấn Bắt đầu Tăng tốc, lần lượt chọn câu hỏi để chiếu. Sau khi mọi người gửi hoặc hết giờ, khóa câu trả lời, chấm đúng/sai rồi chấm điểm.
-5. MC chuyển sang Về đích. Chọn Ngôi sao hy vọng (nếu thí sinh muốn dùng) rồi chọn gói điểm 10/20/30. MC đọc câu hỏi và tự chấm.
-6. Nếu người chính sai, MC mở quyền giành chuông cho các thí sinh còn lại. Có thể nhấn nút tên thí sinh hoặc phím số 1–5.
-7. Mỗi thí sinh trả lời hai câu Về đích. Hết năm lượt, chương trình hiện bảng điểm chung cuộc.
-
-## Định dạng ngân hàng câu hỏi JSON
-
-**Tăng tốc** (không có trường `points`):
-
-    [
-      {
-        "id": "boost-001",
-        "topic": "Toán học",
-        "q": "Câu hỏi viết ở đây?",
-        "a": "Đáp án dành cho MC"
-      }
-    ]
-
-**Về đích** (bắt buộc `points` là 10, 20 hoặc 30):
-
-    [
-      {
-        "id": "final-001",
-        "points": 20,
-        "topic": "Toán học",
-        "q": "Câu hỏi viết ở đây?",
-        "a": "Đáp án dành cho MC"
-      }
-    ]
-
-Trường `a` là đáp án tham khảo để MC đọc, không tự động quyết định đúng/sai. Các câu hỏi đã có trong kho cũ được tự động giữ lại ở kho Về đích.
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2600)}
+function defaultState(){return {roomCode:'',phase:'lobby',names:['Thí sinh 1','Thí sinh 2','Thí sinh 3','Thí sinh 4','Thí sinh 5'],scores:[0,0,0,0,0],boost:{active:false,id:'',qid:'',question:'',duration:60,startedAt:0,marks:{},used:[],result:[]},final:{order:[],orderIndex:0,qCount:[0,0,0,0,0],starUsed:[false,false,false,false,false],used:[],current:null},updatedAt:Date.now()}}
+function normalizeState(raw){
+ const base=defaultState();
+ const value=raw&&typeof raw==='object'?raw:{};
+ const boost=Object.assign({},base.boost,value.boost||{});
+ const final=Object.assign({},base.final,value.final||{});
+ boost.used=Array.isArray(boost.used)?boost.used:[];
+ boost.result=Array.isArray(boost.result)?boost.result:[];
+ boost.marks=boost.marks&&typeof boost.marks==='object'?boost.marks:{};
+ final.used=Array.isArray(final.used)?final.used:[];
+ final.order=Array.isArray(final.order)?final.order:[];
+ final.qCount=Array.isArray(final.qCount)?final.qCount:[0,0,0,0,0];
+ final.starUsed=Array.isArray(final.starUsed)?final.starUsed:[false,false,false,false,false];
+ return Object.assign(base,value,{names:Array.isArray(value.names)?value.names:base.names,scores:Array.isArray(value.scores)?value.scores:base.scores,boost:boost,final:final});
+}
+function validConfig(){const c=window.FIREBASE_CONFIG||{};return !!(c.apiKey&&c.databaseURL&&c.projectId&&c.appId)}
+async function connectCloud(){
+ if(!validConfig())return false;
+ try{if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);auth=firebase.auth();db=firebase.database();await auth.signInAnonymously();uid=auth.currentUser.uid;cloud=true;return true}
+ catch(e){console.error(e);cloud=false;return false}
+}
+function localSave(){if(state){state.updatedAt=Date.now();localStorage.setItem(LOCAL_KEY,JSON.stringify(state));render()}}
+async function saveState(next){state=normalizeState(next);state.updatedAt=Date.now();render();if(cloud&&db&&roomCode){try{await db.ref('rooms/'+roomCode+'/state').set(state)}catch(e){toast('Không thể đồng bộ: '+e.message)}}else{localStorage.setItem(LOCAL_KEY,JSON.stringify(state))}}
+function bindState(path,callback){
+ if(stateListener)stateListener.off();
+ stateListener=db.ref(path+'/state');
+ stateListener.on('value',snap=>{const v=snap.val();if(v){state=normalizeState(v);roomCode=v.roomCode||roomCode;callback&&callback();render()}});
+}
+function bindHostRoom(){
+ const root='rooms/'+roomCode;
+ bindState(root,()=>{
+  const boostId=state&&state.boost&&state.boost.id||'';
+  if(boostId)bindSubmissions(boostId);
+  else if(submissionListener){submissionListener.off();submissionListener=null;boundSubmissionQid='';submissions={};}
+ });
+ if(playerListener)playerListener.off();
+ playerListener=db.ref(root+'/players');
+ playerListener.on('value',snap=>{
+  hostPlayers=snap.val()||{};
+  if(state&&state.names){let changed=false;Object.values(hostPlayers).forEach(p=>{if(p&&p.slot>=1&&p.slot<=5&&p.name&&state.names[p.slot-1]!==p.name){state.names[p.slot-1]=p.name;changed=true}});if(changed)saveState(state)}
+  render();
+ });
+ if(state&&state.boost&&state.boost.id)bindSubmissions(state.boost.id);
+ if(buzzListener)buzzListener.off();
+ buzzListener=db.ref(root+'/buzz');
+ buzzListener.on('value',snap=>{
+  const claims=snap.val()||{};
+  const cur=state&&state.final&&state.final.current;
+  if(!cur||cur.status!=='steal'||cur.buzzed)return;
+  const claimId=String(cur.buzzId||cur.qid||'');
+  const claim=claimId?claims[claimId]:null;
+  if(!claim||processedBuzzQid===claimId)return;
+  processedBuzzQid=claimId;
+  const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));
+  next.final.current.buzzed=Number(claim.slot);
+  next.final.current.status='steal-answer';
+  next.final.current.startedAt=Date.now();
+  next.final.current.duration=60;
+  saveState(next).catch(err=>{processedBuzzQid='';console.error(err);toast('Không thể cập nhật người giành chuông: '+err.message)});
+ });
+}
+function bindSubmissions(qid){
+ if(!cloud||!db||!roomCode||!qid)return;
+ if(submissionListener&&boundSubmissionQid===qid)return;
+ if(submissionListener)submissionListener.off();
+ boundSubmissionQid=qid;
+ submissionListener=db.ref('rooms/'+roomCode+'/submissions/boost/'+qid);
+ submissionListener.on('value',snap=>{
+  if(boundSubmissionQid!==qid)return;
+  submissions=snap.val()||{};render();
+ },err=>{console.error('Boost submissions listener:',err);toast('Lỗi đồng bộ đáp án: '+err.message)});
+}
+function bindPlayerSubmission(qid){
+ if(!joined||!cloud||!db||!uid||!qid)return;
+ if(playerSubmissionListener&&playerSubmissionQid===qid)return;
+ if(playerSubmissionListener)playerSubmissionListener.off();
+ playerSubmissionQid=qid;playerHasSubmitted=false;
+ playerSubmissionListener=db.ref('rooms/'+roomCode+'/submissions/boost/'+qid+'/'+uid);
+ playerSubmissionListener.on('value',snap=>{
+  if(playerSubmissionQid!==qid)return;
+  playerHasSubmitted=snap.exists();render();
+ },err=>{console.error('Player submission listener:',err);toast('Không thể kiểm tra trạng thái đáp án: '+err.message)});
+}
+function syncPlayerSubmission(){
+ if(mode!=='player'||!joined)return;
+ const b=state&&state.boost;
+ if(state&&state.phase==='boost'&&b&&b.active&&b.id){bindPlayerSubmission(b.id);return;}
+ if(playerSubmissionListener)playerSubmissionListener.off();
+ playerSubmissionListener=null;playerSubmissionQid='';playerHasSubmitted=false;playerSubmitting=false;
+}
+function screenUrl(){return location.origin+location.pathname+'?mode=screen&room='+encodeURIComponent(roomCode)}
+function playerUrl(){return location.origin+location.pathname+'?mode=player&room='+encodeURIComponent(roomCode)}
+function makeCode(){return Math.random().toString(36).slice(2,8).toUpperCase()}
+async function createRoom(){
+ const ok=cloud||await connectCloud();
+ roomCode=makeCode();state=defaultState();state.roomCode=roomCode;
+ if(ok){
+  try{const root=db.ref('rooms/'+roomCode);await root.child('hostUid').set(uid);await root.child('state').set(state);bindHostRoom();toast('Đã tạo phòng trực tuyến')}
+  catch(e){cloud=false;localSave();toast('Không tạo được phòng trực tuyến: '+e.message)}
+ }else{localSave();toast('Đã tạo phòng demo trên máy này')}
+ render();
+}
+async function initHost(){
+ const ok=await connectCloud();
+ if(initialRoom&&ok){
+  roomCode=initialRoom;
+  const snap=await db.ref('rooms/'+roomCode+'/state').once('value');
+  if(snap.exists()){state=normalizeState(snap.val());bindHostRoom()}else{state=defaultState();toast('Không tìm thấy phòng này')}
+ }else{
+  try{state=normalizeState(JSON.parse(localStorage.getItem(LOCAL_KEY)||'null'))}catch(e){state=defaultState()}
+  if(!state)state=defaultState();
+  roomCode=state.roomCode||'';
+  if(roomCode&&ok){const snap=await db.ref('rooms/'+roomCode+'/state').once('value');if(snap.exists()){state=normalizeState(snap.val());bindHostRoom()}}
+ }
+ render();
+}
+async function initScreen(){
+ const ok=await connectCloud();
+ if(ok&&initialRoom){roomCode=initialRoom;bindState('rooms/'+roomCode,render)}
+ else{
+  try{state=normalizeState(JSON.parse(localStorage.getItem(LOCAL_KEY)||'null'))}catch(e){state=defaultState()}
+  if(!state)state=defaultState();
+  window.addEventListener('storage',e=>{if(e.key===LOCAL_KEY){try{state=normalizeState(JSON.parse(e.newValue));render()}catch(x){}}});
+  render();
+ }
+}
+async function initPlayer(){
+ const ok=await connectCloud();
+ renderPlayerJoin(ok);
+}
+function activePlayers(){return Object.values(hostPlayers||{}).filter(Boolean)}
+function isOnline(slot){return activePlayers().some(p=>Number(p.slot)===slot)}
+function scoreboardHtml(screen){
+ const names=state.names||[];
+ return names.map((n,i)=>{
+  const online=isOnline(i+1);
+  if(screen)return '<div class="screen-score"><div class="sname">'+esc(n)+'</div><div class="snum">'+Number(state.scores[i]||0)+'</div></div>';
+  return '<div class="score-card"><div class="num">THÍ SINH '+(i+1)+'</div><div class="name">'+esc(n)+'</div><div class="score">'+Number(state.scores[i]||0)+'</div><div class="online">'+(online?'● Đang kết nối':'○ Chưa kết nối')+'</div></div>';
+ }).join('');
+}
+function renderHost(){
+ const online=activePlayers().length;
+ let phaseText=state.phase==='lobby'?'SẴN SÀNG':state.phase==='boost'?'TĂNG TỐC':state.phase==='final'?'VỀ ĐÍCH':'KẾT THÚC';
+ let qr='<div class="callout warning">Chưa cấu hình Firebase. Chế độ demo chỉ đồng bộ giữa các tab trên cùng trình duyệt; muốn 5 điện thoại kết nối thật, hãy cấu hình Firebase theo README.</div>';
+ if(cloud&&roomCode)qr='<div class="row"><div id="qr-player" class="qr"></div><div><b>Mã phòng: '+esc(roomCode)+'</b><div class="tiny muted">Quét QR để vào bằng điện thoại</div><div class="tiny"><a href="'+esc(playerUrl())+'" target="_blank">Mở link thí sinh</a></div></div></div>';
+ const namesForm=(state.names||[]).map((n,i)=>'<div class="field"><label>Thí sinh '+(i+1)+'</label><input data-name="'+i+'" value="'+esc(n)+'" maxlength="32"></div>').join('');
+ const boostBankHtml=boostBank.map(q=>'<div class="q-item"><span class="tag">TĂNG TỐC</span><div class="qcopy"><strong>'+esc(q.topic||'Tổng hợp')+'</strong><p>'+esc(q.q)+'</p></div><button class="btn ghost tiny" data-action="delete-boost-q" data-id="'+esc(q.id)+'">Xóa</button></div>').join('');
+ const finalBankHtml=finalBank.map(q=>'<div class="q-item"><span class="tag">'+q.points+' ĐIỂM</span><div class="qcopy"><strong>'+esc(q.topic||'Tổng hợp')+'</strong><p>'+esc(q.q)+'</p></div><button class="btn ghost tiny" data-action="delete-final-q" data-id="'+esc(q.id)+'">Xóa</button></div>').join('');
+ let boostHtml='';
+ if(state.phase==='boost'){
+  const b=state.boost||{};
+  const entries=Object.values(submissions||{}).sort((a,c)=>(a.submittedAt||0)-(c.submittedAt||0));
+  const used=b.used||[];
+  const available=boostBank.filter(q=>!used.includes(q.id));
+  const results=(b.result||[]).map(x=>'<div class="q-item"><span class="tag">HẠNG '+x.rank+'</span><div class="qcopy"><b>'+esc(state.names[x.slot-1]||('Thí sinh '+x.slot))+'</b><p>'+esc(x.answer||'Chưa gửi')+' · '+(x.correct?'ĐÚNG':'SAI')+'</p></div><strong style="color:var(--gold)">'+Number(x.points||0)+' điểm</strong></div>').join('');
+  const answerRows=entries.map((x,i)=>{
+   const mark=b.marks&&b.marks[x.slot];
+   const badge=mark===true?'<span style="color:var(--green)">ĐÚNG</span>':mark===false?'<span style="color:var(--red)">SAI</span>':'<span class="muted">CHƯA CHẤM</span>';
+   return '<div class="q-item"><span class="tag">TỐC ĐỘ #'+(i+1)+'</span><div class="qcopy"><b>'+esc(state.names[x.slot-1]||('Thí sinh '+x.slot))+'</b><p>'+esc(x.answer)+'</p><span class="tiny">'+badge+'</span></div><button class="btn green tiny" data-action="mark-boost" data-slot="'+x.slot+'" data-mark="true">Đúng</button><button class="btn red tiny" data-action="mark-boost" data-slot="'+x.slot+'" data-mark="false">Sai</button></div>';
+  }).join('');
+  const questions=available.map(q=>'<div class="q-item"><span class="tag">'+esc(q.topic||'Tổng hợp')+'</span><div class="qcopy"><strong>'+esc(q.topic||'Tổng hợp')+'</strong><p>'+esc(q.q)+'</p></div><button class="btn primary tiny" data-action="boost-q" data-id="'+esc(q.id)+'">Chiếu câu này</button></div>').join('');
+  if(b.active){
+   boostHtml='<div class="panel"><div class="section-head"><h2>Điều khiển Tăng tốc</h2><span class="tag">ĐANG CHIẾU CÂU HỎI</span></div><div class="callout">Câu hỏi đang chiếu: <b>'+esc(b.question||'Chưa có câu hỏi')+'</b></div><div class="statline" style="margin:12px 0"><div class="stat">Thời gian: <b>'+Number(b.duration||20)+' giây</b></div><div class="stat">Đã trả lời: <b>'+entries.length+'/5</b></div></div><div class="row"><button class="btn" data-action="close-boost">Khóa câu trả lời</button></div><div class="divider"></div><h3>Đáp án thí sinh gửi lên (theo thời gian nhận)</h3>'+(answerRows||'<div class="empty">Chưa có câu trả lời nào.</div>')+'<div class="tiny muted" style="margin-top:10px">Đánh dấu đúng/sai cho từng đáp án. Sau khi khóa câu trả lời, chương trình mới cho phép chấm điểm.</div></div>';
+  }else{
+   const waiting=b.id&&!b.awarded;
+   boostHtml='<div class="panel"><div class="section-head"><h2>Điều khiển Tăng tốc</h2><span class="tag">'+(waiting?'CHỜ CHẤM ĐIỂM':'CHỌN CÂU HỎI')+'</span></div><div class="callout">Chọn một câu trong ngân hàng để chiếu lên màn hình. Cả 5 thí sinh có thể gửi đáp án bằng điện thoại. Thứ hạng dựa trên thời điểm máy chủ nhận đáp án: 40 / 30 / 20 / 10 / 0 điểm; đáp án sai nhận 0 điểm.</div>'+(waiting?'<div class="divider"></div><h3>Chấm đáp án của câu vừa rồi</h3>'+(answerRows||'<div class="empty">Không có thí sinh nào gửi đáp án.</div>')+'<div class="row" style="margin-top:12px"><button class="btn gold" data-action="award-boost">Xác nhận kết quả và cộng điểm</button></div>':(results?'<div class="divider"></div><h3>Kết quả câu vừa rồi</h3>'+results:'')+'<div class="divider"></div><div class="section-head"><h3>Chọn câu hỏi tiếp theo</h3><span class="tiny muted">'+available.length+' câu chưa dùng</span></div>'+(questions||'<div class="empty">Đã dùng hết câu hỏi. Hãy thêm câu mới hoặc kết thúc phần thi.</div>'))+'<div class="row" style="margin-top:12px"><button class="btn gold" data-action="next-phase">Kết thúc Tăng tốc · Sang Về đích</button></div></div>';
+  }
+ }
+ let finalHtml='';
+ if(state.phase==='final'){
+  const f=state.final||{};const slot=f.order[f.orderIndex];const cur=f.current;
+  const orderHtml=(f.order||[]).map((s,i)=>'<div class="stat">'+(i+1)+'. <b>'+esc(state.names[s-1])+'</b> — '+Number(state.scores[s-1]||0)+' điểm</div>').join('');
+  if(!cur){
+   const done=f.orderIndex>=5;
+   const currentName=done?'Đã hoàn thành':state.names[slot-1];
+   finalHtml='<div class="panel"><div class="section-head"><h2>Điều khiển Về đích</h2><span class="tag">MỖI THÍ SINH 2 CÂU</span></div><div class="callout">Thứ tự hiện tại: <b>'+esc(currentName||'')+'</b>. Người có điểm cao hơn được thi trước.</div><div class="statline" style="margin:12px 0">'+orderHtml+'</div>'+(done?'<div class="callout warning">Đã hoàn thành phần Về đích. Bảng điểm chung cuộc đã được cập nhật.</div>':'<p class="muted tiny">Hỏi thí sinh chọn gói điểm, sau đó chọn gói tương ứng bên dưới. Bật Ngôi sao hy vọng trước khi chọn gói nếu thí sinh muốn sử dụng.</p><label class="row"><input id="star-next" type="checkbox" '+(starNext?'checked':'')+' '+(f.starUsed[slot-1]?'disabled':'')+'> ⭐ Ngôi sao hy vọng '+(f.starUsed[slot-1]?'(đã sử dụng)':'(nhân đôi điểm và điểm trừ)')+'</label><div class="package-row" style="margin-top:12px"><button class="package" data-action="final-package" data-points="10">10<small>ĐIỂM</small></button><button class="package" data-action="final-package" data-points="20">20<small>ĐIỂM</small></button><button class="package" data-action="final-package" data-points="30">30<small>ĐIỂM</small></button></div>')+'</div>';
+  }else{
+   const bankQ=finalBank.find(q=>q.id===cur.qid);
+   const multiplier=cur.star?2:1;
+   let actionHtml='';
+   if(cur.status==='asking'){
+    actionHtml='<div class="row"><button class="btn green" data-action="judge-main" data-correct="true">Trả lời đúng</button><button class="btn red" data-action="judge-main" data-correct="false">Trả lời sai / hết giờ</button></div>';
+   }else if(cur.status==='steal'){
+    actionHtml='<div class="callout warning">Người chơi chính trả lời sai. Mời các thí sinh còn lại giành quyền trả lời bằng chuông.</div><div class="buzzer-grid" style="margin:12px 0">'+state.names.map((n,i)=>'<button class="buzzer" data-action="buzz" data-slot="'+(i+1)+'" '+((i+1)===cur.slot?'disabled':'')+'>'+esc(n)+'</button>').join('')+'</div><button class="btn ghost" data-action="skip-steal">Không ai giành quyền — bỏ qua</button>';
+   }else if(cur.status==='steal-answer'){
+    actionHtml='<div class="callout">Thí sinh giành quyền: <b>'+esc(state.names[cur.buzzed-1])+'</b>. MC chấm câu trả lời.</div><div class="row"><button class="btn green" data-action="judge-steal" data-correct="true">Trả lời đúng</button><button class="btn red" data-action="judge-steal" data-correct="false">Trả lời sai</button></div>';
+   }else{
+    actionHtml='<div class="callout warning">Câu hỏi đã được chấm. Nhấn tiếp tục để sang câu tiếp theo.</div><button class="btn gold" data-action="finish-current">Câu tiếp theo</button>';
+   }
+   finalHtml='<div class="panel"><div class="section-head"><h2>Điều khiển Về đích</h2><span class="tag">'+cur.points+' ĐIỂM'+(cur.star?' · NGÔI SAO ×2':'')+'</span></div><div class="label">Thí sinh đang trả lời</div><h2>'+esc(state.names[cur.slot-1])+'</h2><div class="callout"><b>'+esc(cur.question)+'</b></div><div class="statline" style="margin:12px 0"><div class="stat">Thời gian: <b>'+cur.duration+' giây</b></div><div class="stat">Câu số: <b>'+(Number(f.qCount[cur.slot-1]||0)+1)+'/2</b></div><div class="stat">Điểm áp dụng: <b>'+cur.points*multiplier+'</b></div></div><div class="callout warning">Đáp án dành cho MC: <b>'+(bankQ?esc(bankQ.a):'Chưa có đáp án')+'</b></div><div class="divider"></div>'+actionHtml+'</div>';
+  }
+ }
+ const finishSummary=state.phase==='complete'?'<div class="panel"><h2>🏆 Chung cuộc</h2><div class="score-grid">'+scoreboardHtml(false)+'</div><button class="btn gold" data-action="reset">Tạo ván mới</button></div>':'';
+ $('app').innerHTML='<div class="wrap"><div class="top"><div class="brand"><div class="brand-mark">★</div><div><h1>ĐƯỜNG ĐUA TRI THỨC</h1><small>PHIÊN BẢN SÂN CHƠI KIẾN THỨC</small></div></div><div class="top-actions"><span class="pill">Kết nối: <b>'+(cloud?'Trực tuyến':'Demo')+'</b></span><span class="pill">Phòng: <b>'+(roomCode||'Chưa tạo')+'</b></span><button class="btn" data-action="create-room">Tạo phòng</button><a class="btn ghost" href="'+esc(screenUrl())+'" target="_blank">Mở màn chiếu ↗</a></div></div><div class="grid two"><div class="panel"><div class="section-head"><h2>Bảng điểm</h2><span class="tag">'+phaseText+'</span></div><div class="score-grid">'+scoreboardHtml(false)+'</div><div class="divider"></div><div class="row"><button class="btn primary" data-action="start-boost">Bắt đầu Tăng tốc</button><button class="btn gold" data-action="start-final">Bắt đầu Về đích</button><button class="btn ghost" data-action="reset-scores">Đặt lại điểm</button></div></div><div class="panel"><div class="section-head"><h2>Phòng thi</h2><span class="tag">'+online+'/5 ĐIỆN THOẠI</span></div>'+qr+'<div class="divider"></div><h3>Danh sách thí sinh</h3>'+namesForm+'<button class="btn" data-action="save-names">Lưu tên thí sinh</button></div></div><div style="height:16px"></div>'+(boostHtml||'')+(finalHtml||'')+finishSummary+'<div style="height:16px"></div><div class="grid two"><div class="panel"><div class="section-head"><h2>Ngân hàng câu hỏi Tăng tốc</h2><span class="tag">'+boostBank.length+' CÂU</span></div><div class="question-list">'+boostBankHtml+'</div><div class="divider"></div><form id="add-boost-question"><div class="field"><label>Chủ đề</label><input name="topic" placeholder="Ví dụ: Toán học"></div><div class="field"><label>Nội dung câu hỏi</label><textarea name="q" required placeholder="Nhập câu hỏi Tăng tốc..."></textarea></div><div class="field"><label>Đáp án chuẩn (chỉ MC xem)</label><input name="a" required placeholder="Đáp án đúng"></div><button class="btn primary" type="submit">+ Thêm câu hỏi Tăng tốc</button></form><div class="row" style="margin-top:12px"><button class="btn ghost" data-action="export-boost-bank">Xuất bộ Tăng tốc</button><label class="btn ghost">Nhập bộ Tăng tốc<input id="import-boost-bank" type="file" accept=".json,application/json" hidden></label></div></div><div class="panel"><div class="section-head"><h2>Ngân hàng câu hỏi Về đích</h2><span class="tag">'+finalBank.length+' CÂU</span></div><div class="question-list">'+finalBankHtml+'</div><div class="divider"></div><form id="add-final-question"><div class="grid two"><div class="field"><label>Gói điểm</label><select name="points"><option value="10">10 điểm</option><option value="20">20 điểm</option><option value="30">30 điểm</option></select></div><div class="field"><label>Chủ đề</label><input name="topic" placeholder="Ví dụ: Toán học"></div></div><div class="field"><label>Nội dung câu hỏi</label><textarea name="q" required placeholder="Nhập câu hỏi Về đích..."></textarea></div><div class="field"><label>Đáp án chuẩn (chỉ MC xem)</label><input name="a" required placeholder="Đáp án đúng"></div><button class="btn primary" type="submit">+ Thêm câu hỏi Về đích</button></form><div class="row" style="margin-top:12px"><button class="btn ghost" data-action="export-final-bank">Xuất bộ Về đích</button><label class="btn ghost">Nhập bộ Về đích<input id="import-final-bank" type="file" accept=".json,application/json" hidden></label></div></div></div><div class="grid two" style="margin-top:16px"><div class="panel"><h2>Luật chơi đang áp dụng</h2><div class="callout"><b>Tăng tốc:</b> 5 thí sinh gửi đáp án bằng điện thoại. MC chấm đúng/sai; các đáp án đúng được xếp theo thời gian gửi: 40 – 30 – 20 – 10 – 0 điểm. Ngân hàng Tăng tốc không dùng gói 10/20/30.</div><div class="callout" style="margin-top:10px"><b>Về đích:</b> thi theo thứ tự điểm từ cao xuống thấp. Mỗi người chọn 2 câu trong các gói 10/20/30. MC quyết định đúng/sai; khi người chính sai, MC mở chuông để thí sinh khác giành quyền.</div><div class="callout warning" style="margin-top:10px"><b>Ngôi sao hy vọng:</b> mỗi thí sinh dùng tối đa 1 lần. Trả lời đúng được nhân đôi điểm; sai bị trừ gấp đôi. Người giành quyền trả lời được tính điểm thường.</div><p class="tiny muted">Hai ngân hàng câu hỏi được lưu riêng và có chức năng nhập/xuất JSON độc lập.</p></div></div><div class="footer-note">ĐƯỜNG ĐUA TRI THỨC · Dùng trên màn chiếu + điện thoại · Không cần cài ứng dụng</div></div>';
+ if(cloud&&roomCode&&$('qr-player')&&window.QRCode){new QRCode($('qr-player'),{text:playerUrl(),width:112,height:112})}
+}
+function renderScreen(){
+ if(!state){$('app').innerHTML='<div class="empty">Đang tải phòng thi...</div>';return}
+ let phase=state.phase==='boost'?'TĂNG TỐC':state.phase==='final'?'VỀ ĐÍCH':state.phase==='complete'?'CHUNG CUỘC':'CHÀO MỪNG';
+ let q='',sub='Sẵn sàng chinh phục đường đua tri thức?',timer='',who='',resultPanel='';
+ const boost=state.boost||{};
+ if(state.phase==='boost'&&boost.active){
+  q=boost.question;sub='Tất cả thí sinh hãy nhập đáp án trên điện thoại';timer='<div class="timer" data-timer="boost">--</div>';
+ }else if(state.phase==='boost'&&boost.awarded){
+  q=boost.question;sub='KẾT QUẢ CÂU HỎI · THỨ HẠNG THEO TỐC ĐỘ GỬI ĐÁP ÁN';
+  const rows=(boost.result||[]).slice().sort((a,b)=>a.rank-b.rank).map(r=>{
+   const seconds=Number(r.elapsedMs||0)/1000;
+   return '<div class="screen-result-row"><span class="screen-rank">#'+Number(r.rank)+'</span><span class="screen-player">'+esc(state.names[r.slot-1]||('Thí sinh '+r.slot))+'</span><span class="screen-answer">'+esc(r.answer||'')+'</span><span class="screen-time">'+seconds.toFixed(2)+'s</span><span class="screen-points">'+Number(r.points||0)+' điểm</span><span class="screen-verdict '+(r.correct?'is-correct':'is-wrong')+'">'+(r.correct?'ĐÚNG':'SAI')+'</span></div>';
+  }).join('');
+  const answered=(boost.result||[]).map(x=>Number(x.slot));
+  const missing=(state.names||[]).map((n,i)=>({n:n,slot:i+1})).filter(x=>!answered.includes(x.slot)).map(x=>'<div class="screen-result-row is-missing"><span class="screen-rank">—</span><span class="screen-player">'+esc(x.n)+'</span><span class="screen-answer">Không gửi đáp án</span><span class="screen-time">—</span><span class="screen-points">0 điểm</span><span class="screen-verdict">VẮNG</span></div>').join('');
+  resultPanel='<div class="screen-answer-reveal"><span>ĐÁP ÁN CHÍNH XÁC</span><strong>'+esc(boost.answer||'Chưa có đáp án mẫu')+'</strong></div><div class="screen-results"><div class="screen-results-head"><span>HẠNG</span><span>THÍ SINH</span><span>ĐÁP ÁN ĐÃ GỬI</span><span>TỐC ĐỘ</span><span>ĐIỂM</span><span>KẾT QUẢ</span></div>'+(rows||'')+missing+'</div>';
+ }else if(state.phase==='final'&&state.final&&state.final.current){
+   if(current.status==='steal')sub='CƠ HỘI GIÀNH QUYỀN TRẢ LỜI';
+   else if(current.status==='steal-answer')sub='🔔 '+esc(state.names[Number(current.buzzed)-1]||('Thí sinh '+current.buzzed))+' ĐÃ BẤM CHUÔNG NHANH NHẤT · ĐANG TRẢ LỜI';
+   else sub='Hãy suy nghĩ và đưa ra câu trả lời';
+ }else if(state.phase==='complete'){q='CHÚC MỪNG CÁC THÍ SINH!';sub='Kết quả chung cuộc';}
+ else if(state.phase==='boost'){q='PHẦN THI TĂNG TỐC';sub='MC chuẩn bị câu hỏi tiếp theo'}
+ else if(state.phase==='final'){q='PHẦN THI VỀ ĐÍCH';sub='Chờ MC chọn gói câu hỏi'}
+ $('app').innerHTML='<div class="screen-wrap"><div class="screen-top"><div><div class="screen-logo">★ ĐƯỜNG ĐUA TRI THỨC</div><div class="screen-code">PHÒNG '+esc(roomCode||'DEMO')+' · '+phase+'</div></div><div class="screen-sub">5 THÍ SINH · 2 CHẶNG ĐUA</div></div><div class="screen-scores">'+scoreboardHtml(true)+'</div><div class="screen-main '+(resultPanel?'has-results':'')+'"><div class="screen-phase">'+phase+'</div>'+who+'<div class="screen-question">'+esc(q)+'</div><div class="screen-sub">'+esc(sub)+'</div>'+timer+resultPanel+'</div><div class="screen-footer"><span>HÃY BÌNH TĨNH · TỰ TIN · CHIẾN THẮNG</span><span>ĐƯỜNG ĐUA TRI THỨC</span></div></div>';
+}
+function renderPlayerJoin(cloudReady){
+ $('app').innerHTML='<div class="player-wrap"><div class="player-card"><div class="brand"><div class="brand-mark">★</div><div><h1>ĐƯỜNG ĐUA TRI THỨC</h1><small>THIẾT BỊ THÍ SINH</small></div></div><div class="panel"><div class="label">Tham gia phòng thi</div><h2>Kết nối với màn chiếu</h2><div class="field"><label>Mã phòng</label><input id="join-room" maxlength="8" value="'+esc(initialRoom)+'" placeholder="Nhập mã phòng"></div><div class="field"><label>Số báo danh</label><select id="join-slot"><option value="1">Thí sinh 1</option><option value="2">Thí sinh 2</option><option value="3">Thí sinh 3</option><option value="4">Thí sinh 4</option><option value="5">Thí sinh 5</option></select></div><div class="field"><label>Tên hiển thị</label><input id="join-name" maxlength="32" placeholder="Nhập tên của bạn"></div><button class="btn primary" style="width:100%" data-action="join-room" '+(!cloudReady?'disabled':'')+'>Tham gia</button><p class="player-status">'+(cloudReady?'Đã sẵn sàng kết nối.':'Máy chủ chưa được cấu hình. MC cần thiết lập Firebase theo README trước khi thí sinh tham gia.')+'</p></div></div></div>';
+}
+function renderPlayer(){
+ if(!state){$('app').innerHTML='<div class="player-wrap"><div class="player-card"><div class="empty">Đang kết nối phòng thi...</div></div></div>';return}
+ let body='';
+ if(!joined) return renderPlayerJoin(cloud);
+ const b=state.boost||{};
+ if(state.phase==='boost'&&b.active){
+  const submitted=playerHasSubmitted&&playerSubmissionQid===b.id;
+  body='<div class="label">PHẦN THI TĂNG TỐC</div><div class="player-q">'+esc(b.question)+'</div><div class="timer" data-timer="boost">--</div>'+(submitted?'<div class="callout">Đã gửi câu trả lời. Hãy chờ MC công bố kết quả.</div>':'<form id="answer-form"><div class="field"><label>Đáp án của bạn</label><textarea class="answer-input" name="answer" required maxlength="240" placeholder="Nhập câu trả lời..."></textarea></div><button class="btn primary" style="width:100%" type="submit" '+(playerSubmitting?'disabled':'')+'>'+(playerSubmitting?'ĐANG GỬI...':'GỬI ĐÁP ÁN')+'</button></form>');
+ }else if(state.phase==='final'){
+  const cur=state.final&&state.final.current;
+  if(cur&&cur.status==='steal'&&playerSlot!==Number(cur.slot)){
+   body='<div class="label">PHẦN THI VỀ ĐÍCH · GIÀNH QUYỀN</div><h2>Ai nhanh hơn sẽ được trả lời!</h2><div class="callout warning">Thí sinh đang thi đã trả lời sai. Nhấn chuông ngay khi MC cho phép để giành quyền trả lời.</div><button class="btn gold" data-action="player-buzz" style="width:100%;min-height:100px;font-size:28px;margin-top:18px">🔔 BẤM CHUÔNG</button><p class="player-status">Bạn đang là '+esc(state.names[playerSlot-1]||('Thí sinh '+playerSlot))+'. Chỉ người bấm đầu tiên được quyền trả lời.</p>';
+  }else if(cur&&cur.status==='steal-answer'){
+   body='<div class="label">PHẦN THI VỀ ĐÍCH</div><h2>'+(Number(cur.buzzed)===playerSlot?'🎉 BẠN ĐÃ GIÀNH ĐƯỢC QUYỀN!':'Chuông đã có người bấm trước')+'</h2><div class="callout">'+esc(state.names[Number(cur.buzzed)-1]||'Thí sinh')+' đang trả lời. Hãy chờ MC chấm điểm.</div>';
+  }else if(cur&&cur.status==='steal'&&playerSlot===Number(cur.slot)){
+   body='<div class="label">PHẦN THI VỀ ĐÍCH</div><h2>Bạn đã trả lời sai</h2><div class="callout">Các thí sinh khác đang có cơ hội giành quyền trả lời.</div>';
+  }else{
+   body='<div class="label">PHẦN THI VỀ ĐÍCH</div><h2>Hãy cổ vũ cho các thí sinh!</h2><div class="callout">Khi thí sinh đang thi trả lời sai, nút chuông giành quyền sẽ tự xuất hiện trên điện thoại của 4 người còn lại.</div>';
+  }
+ }else if(state.phase==='complete'){
+  body='<div class="label">CHUNG CUỘC</div><h2>Cuộc thi đã kết thúc</h2><p class="player-q">Điểm của bạn: '+Number(state.scores[playerSlot-1]||0)+'</p>';
+ }else{
+  body='<div class="label">ĐANG CHỜ CÂU HỎI</div><h2>Hãy sẵn sàng!</h2><div class="callout">Khi MC bắt đầu câu hỏi Tăng tốc, câu hỏi sẽ xuất hiện tại đây.</div>';
+ }
+ $('app').innerHTML='<div class="player-wrap"><div class="player-card"><div class="brand"><div class="brand-mark">★</div><div><h1>ĐƯỜNG ĐUA TRI THỨC</h1><small>'+esc(state.names[playerSlot-1]||playerName)+' · THÍ SINH '+playerSlot+'</small></div></div><div class="panel">'+body+'</div><div class="player-status">Phòng '+esc(roomCode)+' · Điểm hiện tại: <b>'+Number(state.scores[playerSlot-1]||0)+'</b></div></div></div>';
+}
+function render(){
+ if(mode==='screen')renderScreen();else if(mode==='player')renderPlayer();else renderHost();
+}
+function addBoostQuestion(form){
+ const fd=new FormData(form),q=String(fd.get('q')||'').trim(),a=String(fd.get('a')||'').trim();
+ if(!q||!a)return;
+ boostBank.push({id:'boost'+Date.now(),topic:String(fd.get('topic')||'Tổng hợp'),q:q,a:a});
+ saveBoostBank();form.reset();render();toast('Đã thêm câu hỏi Tăng tốc');
+}
+function addFinalQuestion(form){
+ const fd=new FormData(form),q=String(fd.get('q')||'').trim(),a=String(fd.get('a')||'').trim();
+ if(!q||!a)return;
+ finalBank.push({id:'final'+Date.now(),points:Number(fd.get('points')),topic:String(fd.get('topic')||'Tổng hợp'),q:q,a:a});
+ saveFinalBank();form.reset();render();toast('Đã thêm câu hỏi Về đích');
+}
+async function joinRoom(){
+ if(!cloud||!db){toast('Chưa kết nối Firebase');return}
+ const code=($('join-room').value||'').trim().toUpperCase();const slot=Number($('join-slot').value);const name=($('join-name').value||'').trim();
+ if(!code||!name){toast('Hãy nhập mã phòng và tên');return}
+ const root='rooms/'+code;
+ const snap=await db.ref(root+'/state').once('value');
+ if(!snap.exists()){toast('Không tìm thấy phòng thi');return}
+ const all=await db.ref(root+'/players').once('value');const people=all.val()||{};
+ const occupied=Object.keys(people).some(k=>k!==uid&&Number(people[k].slot)===slot);
+ if(occupied){toast('Số báo danh này đã có người sử dụng');return}
+ await db.ref(root+'/players/'+uid).set({slot:slot,name:name,joinedAt:Date.now()});
+ roomCode=code;playerSlot=slot;playerName=name;joined=true;state=normalizeState(snap.val());bindState(root,()=>syncPlayerSubmission());syncPlayerSubmission();render();
+}
+async function submitAnswer(form){
+ if(!cloud||!db||!state||!state.boost||!state.boost.active||playerSubmitting)return;
+ const b=state.boost;
+ if(playerHasSubmitted&&playerSubmissionQid===b.id){toast('Bạn đã gửi đáp án cho câu này rồi');return;}
+ const answer=String(new FormData(form).get('answer')||'').trim();if(!answer)return;
+ if(Date.now()>(b.startedAt+b.duration*1000)){toast('Đã hết giờ');return}
+ playerSubmitting=true;render();
+ try{
+  const ref=db.ref('rooms/'+roomCode+'/submissions/boost/'+b.id+'/'+uid);
+  const submission={slot:playerSlot,name:playerName,answer:answer,submittedAt:firebase.database.ServerValue.TIMESTAMP};
+  const result=await ref.transaction(current=>current==null?submission:undefined);
+  playerHasSubmitted=true;
+  if(result.committed)toast('Đã gửi đáp án!');else toast('Bạn đã gửi đáp án cho câu này rồi');
+ }catch(err){console.error(err);toast('Không gửi được đáp án: '+err.message)}
+ finally{playerSubmitting=false;render();}
+}
+async function startBoostQuestion(id){
+ const q=boostBank.find(x=>x.id===id);if(!q)return;
+ submissions={};
+ if(state.boost&&state.boost.id&&!state.boost.awarded){toast('Hãy chấm điểm câu hiện tại trước');return}
+ const b={active:true,id:'b'+Date.now(),qid:q.id,question:q.q,answer:q.a,duration:60,startedAt:Date.now(),marks:{},used:(state.boost&&state.boost.used)||[],result:[],awarded:false};
+ await saveState(Object.assign({},state,{phase:'boost',boost:b}));
+ if(cloud)bindSubmissions(b.id);
+}
+async function markBoost(slot,mark){
+ const next=Object.assign({},state);next.boost=Object.assign({},state.boost);next.boost.marks=Object.assign({},next.boost.marks||{});next.boost.marks[slot]=mark;await saveState(next);
+}
+async function awardBoost(){
+ if(state.boost.active){toast('Hãy khóa câu trả lời trước');return}
+ if(state.boost.awarded){toast('Câu này đã được chấm điểm');return}
+ const entries=Object.values(submissions||{}).sort((a,b)=>(a.submittedAt||0)-(b.submittedAt||0));
+ if(entries.some(x=>!state.boost.marks||state.boost.marks[x.slot]===undefined)){toast('Hãy đánh dấu đúng hoặc sai cho tất cả đáp án trước');return}
+ const pts=[40,30,20,10,0];const next=Object.assign({},state);next.scores=state.scores.slice();
+ const result=entries.map((x,i)=>{const correct=state.boost.marks&&state.boost.marks[x.slot]===true;const points=correct?pts[Math.min(i,4)]:0;if(correct)next.scores[x.slot-1]+=points;return {slot:x.slot,answer:x.answer,correct:!!correct,rank:i+1,points:points,elapsedMs:Math.max(0,Number(x.submittedAt||0)-Number(state.boost.startedAt||0))}});
+ next.boost=Object.assign({},state.boost,{result:result,used:[...(state.boost.used||[]),state.boost.qid],awarded:true});
+ await saveState(next);toast('Đã cộng điểm Tăng tốc');
+}
+async function startFinal(){
+ const order=[1,2,3,4,5].sort((a,b)=>Number(state.scores[b-1]||0)-Number(state.scores[a-1]||0));
+ await saveState(Object.assign({},state,{phase:'final',final:{order:order,orderIndex:0,qCount:[0,0,0,0,0],starUsed:[false,false,false,false,false],used:[],current:null}}));
+ starNext=false;
+}
+async function chooseFinalPackage(points){
+ const f=state.final||{};const order=Array.isArray(f.order)?f.order:[];const slot=order[Number(f.orderIndex)||0];const star=$('star-next')?$('star-next').checked:false;
+ if(!slot){toast('Không tìm thấy lượt thi Về đích. Hãy bắt đầu lại phần thi.');return}
+ const used=Array.isArray(f.used)?f.used:[];
+ const available=finalBank.filter(x=>Number(x.points)===Number(points)&&!used.includes(x.id));
+ if(!available.length){toast('Gói '+points+' điểm đã hết câu hỏi chưa dùng');return}
+ const q=available[Math.floor(Math.random()*available.length)];
+ const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(f));next.final.used=Array.isArray(next.final.used)?next.final.used:[];next.final.used.push(q.id);if(star){next.final.starUsed=Array.isArray(next.final.starUsed)?next.final.starUsed:[false,false,false,false,false];next.final.starUsed[slot-1]=true;}
+ if(cloud&&db&&roomCode){
+  try{await db.ref('rooms/'+roomCode+'/buzz/'+q.id).remove();processedBuzzQid='';}
+  catch(err){console.error(err);toast('Không thể làm mới chuông của câu hỏi: '+err.message);return;}
+ }
+ processedBuzzQid='';
+ next.final.current={qid:q.id,question:q.q,slot:slot,points:points,star:star,status:'asking',duration:60,startedAt:Date.now(),buzzed:null,mainJudged:false,completed:false};
+ await saveState(next);starNext=false;
+}
+async function judgeMain(correct){
+ const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));const c=next.final.current;const mult=c.star?2:1;
+ if(correct){next.scores[c.slot-1]+=c.points*mult;c.status='done';c.completed=true;c.outcome='main-correct'}
+ else{if(c.star)next.scores[c.slot-1]-=c.points*mult;c.status='steal';c.mainJudged=true;c.outcome='main-wrong'}
+ await saveState(next);
+}
+async function buzz(slot){
+ if(!state||!state.final||!state.final.current)return;
+ if(!Number.isInteger(Number(slot))||Number(slot)<1||Number(slot)>5)return;
+ const c=state.final.current;
+ if(c.status!=='steal'||c.buzzed||Number(slot)===Number(c.slot))return;
+ if(mode==='player'&&cloud&&db&&roomCode){
+  const claimId=String(c.qid);
+  const ref=db.ref('rooms/'+roomCode+'/buzz/'+claimId);
+  const claim={slot:Number(slot),uid:uid,name:playerName,claimedAt:firebase.database.ServerValue.TIMESTAMP};
+  const result=await ref.transaction(current=>current==null?claim:undefined);
+  if(result.committed)toast('Đã ghi nhận lượt bấm chuông! Chờ MC xác nhận.');
+  else toast('Rất tiếc, người khác đã bấm chuông trước!');
+  return;
+ }
+ const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));next.final.current.buzzed=Number(slot);next.final.current.status='steal-answer';next.final.current.startedAt=Date.now();next.final.current.duration=60;await saveState(next);
+}
+async function judgeSteal(correct){
+ const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));const c=next.final.current;
+ if(correct)next.scores[c.buzzed-1]+=c.points;
+ c.status='done';c.completed=true;c.outcome=correct?'steal-correct':'steal-wrong';await saveState(next);
+}
+async function finishCurrent(){
+ const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));const f=next.final,c=f.current;
+ if(!c||!c.completed){toast('Hãy chấm xong câu hỏi trước');return}
+ f.qCount[c.slot-1]+=1;f.current=null;
+ if(f.qCount[c.slot-1]>=2)f.orderIndex+=1;
+ if(f.orderIndex>=5)next.phase='complete';
+ await saveState(next);
+}
+async function resetGame(){
+ if(!confirm('Tạo ván mới và xóa toàn bộ điểm hiện tại?'))return;
+ const next=defaultState();next.roomCode=roomCode;await saveState(next);submissions={};starNext=false;
+}
+function exportBank(which){
+ const list=which==='boost'?boostBank:finalBank;
+ const blob=new Blob([JSON.stringify(list,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=which==='boost'?'ngan-hang-tang-toc.json':'ngan-hang-ve-dich.json';a.click();URL.revokeObjectURL(url);
+}
+function downloadBankFile(file,which){
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const val=JSON.parse(reader.result);
+   if(!Array.isArray(val)||!val.every(x=>x&&x.q&&x.a&&typeof x.q==='string'&&typeof x.a==='string'))throw new Error('Cấu trúc không hợp lệ');
+   if(which==='boost'){
+    boostBank=val.map((x,i)=>({id:x.id||('boost-import-'+Date.now()+'-'+i),topic:x.topic||'Tổng hợp',q:String(x.q),a:String(x.a)}));
+    saveBoostBank();
+   }else{
+    if(!val.every(x=>[10,20,30].includes(Number(x.points))))throw new Error('Mỗi câu Về đích phải có gói 10, 20 hoặc 30 điểm');
+    finalBank=val.map((x,i)=>({id:x.id||('final-import-'+Date.now()+'-'+i),points:Number(x.points),topic:x.topic||'Tổng hợp',q:String(x.q),a:String(x.a)}));
+    saveFinalBank();
+   }
+   render();toast('Đã nhập ngân hàng '+(which==='boost'?'Tăng tốc':'Về đích'));
+  }catch(e){toast('File JSON không hợp lệ: '+e.message)}
+ };
+ reader.readAsText(file);
+}
+document.addEventListener('submit',e=>{
+ if(e.target.id==='add-boost-question'){e.preventDefault();addBoostQuestion(e.target)}
+ if(e.target.id==='add-final-question'){e.preventDefault();addFinalQuestion(e.target)}
+ if(e.target.id==='answer-form'){e.preventDefault();submitAnswer(e.target)}
+});
+document.addEventListener('change',e=>{
+ if(e.target.id==='import-boost-bank'&&e.target.files[0])downloadBankFile(e.target.files[0],'boost');
+ if(e.target.id==='import-final-bank'&&e.target.files[0])downloadBankFile(e.target.files[0],'final');
+ if(e.target.id==='star-next')starNext=e.target.checked;
+ if(e.target.dataset.name!==undefined&&mode==='host'){
+  const i=Number(e.target.dataset.name);const next=Object.assign({},state);next.names=state.names.slice();next.names[i]=e.target.value.trim()||('Thí sinh '+(i+1));saveState(next)
+ }
+});
+document.addEventListener('click',async e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;
+ try{
+  if(a==='create-room')await createRoom();
+  if(a==='save-names'){const inputs=document.querySelectorAll('[data-name]');const next=Object.assign({},state);next.names=Array.from(inputs).map((x,i)=>x.value.trim()||('Thí sinh '+(i+1)));await saveState(next);toast('Đã lưu tên')}
+  if(a==='delete-boost-q'){if(confirm('Xóa câu hỏi Tăng tốc này?')){boostBank=boostBank.filter(x=>x.id!==b.dataset.id);saveBoostBank();render()}}
+  if(a==='delete-final-q'){if(confirm('Xóa câu hỏi Về đích này?')){finalBank=finalBank.filter(x=>x.id!==b.dataset.id);saveFinalBank();render()}}
+  if(a==='export-boost-bank')exportBank('boost');
+  if(a==='export-final-bank')exportBank('final');
+  if(a==='start-boost'){await saveState(Object.assign({},state,{phase:'boost',boost:{active:false,id:'',qid:'',question:'',duration:60,startedAt:0,marks:{},used:[],result:[]}}));}
+  if(a==='boost-q')await startBoostQuestion(b.dataset.id);
+  if(a==='mark-boost')await markBoost(Number(b.dataset.slot),b.dataset.mark==='true');
+  if(a==='close-boost'){const n=Object.assign({},state);n.boost=Object.assign({},state.boost,{active:false});await saveState(n)}
+  if(a==='award-boost')await awardBoost();
+  if(a==='next-phase')await startFinal();
+  if(a==='start-final')await startFinal();
+  if(a==='final-package')await chooseFinalPackage(Number(b.dataset.points));
+  if(a==='judge-main')await judgeMain(b.dataset.correct==='true');
+  if(a==='buzz')await buzz(Number(b.dataset.slot));
+   if(a==='player-buzz'){b.disabled=true;await buzz(playerSlot)}
+  if(a==='judge-steal')await judgeSteal(b.dataset.correct==='true');
+  if(a==='skip-steal'){const n=Object.assign({},state);n.final=JSON.parse(JSON.stringify(state.final));n.final.current.status='done';n.final.current.completed=true;await saveState(n)}
+  if(a==='finish-current')await finishCurrent();
+  if(a==='reset')await resetGame();
+  if(a==='reset-scores'){const n=Object.assign({},state);n.scores=[0,0,0,0,0];await saveState(n)}
+  if(a==='join-room')await joinRoom();
+ }
+ catch(err){if(a==='player-buzz')b.disabled=false;console.error(err);toast('Có lỗi: '+err.message)}
+});
+document.addEventListener('keydown',e=>{
+ if(mode!=='host'||!state||state.phase!=='final'||!state.final.current||state.final.current.status!=='steal')return;
+ const n=Number(e.key);if(n>=1&&n<=5)buzz(n);
+});
+function updateTimers(){
+ if(mode==='host'&&state&&state.phase==='boost'&&state.boost&&state.boost.active&&state.boost.startedAt&&!autoLocking&&Date.now()>=state.boost.startedAt+state.boost.duration*1000){
+  autoLocking=true;
+  const nextState=Object.assign({},state);nextState.boost=Object.assign({},state.boost,{active:false});
+  saveState(nextState).finally(()=>{autoLocking=false});
+ }
+ document.querySelectorAll('[data-timer]').forEach(el=>{
+  let q=null;if(state&&mode==='player'&&state.phase==='boost')q=state.boost;
+  else if(state&&mode==='screen'&&state.phase==='boost')q=state.boost;
+  else if(state&&mode==='screen'&&state.phase==='final'&&state.final.current)q=state.final.current;
+  if(!q||!q.startedAt){el.textContent='--';return}
+  const left=Math.max(0,Math.ceil((q.startedAt+q.duration*1000-Date.now())/1000));el.textContent=String(left).padStart(2,'0');
+  if(left===0)el.style.color='var(--red)';
+ });
+}
+setInterval(updateTimers,250);
+window.addEventListener('beforeunload',()=>{if(stateListener)stateListener.off();if(playerListener)playerListener.off();if(submissionListener)submissionListener.off();if(buzzListener)buzzListener.off();if(playerSubmissionListener)playerSubmissionListener.off()});
+(async function init(){
+ if(mode==='host'){await initHost()}
+ else if(mode==='screen'){await initScreen()}
+ else if(mode==='player'){const ok=await connectCloud();if(initialRoom&&ok){roomCode=initialRoom;renderPlayerJoin(true)}else renderPlayerJoin(false)}
+ else renderHost();
+})();
+})();
+</script>
+</body>
+</html>
