@@ -6,10 +6,10 @@ Web game thi kiến thức phong cách gameshow, tối ưu cho một máy tính 
 - Màn MC: tạo phòng, đổi tên 5 thí sinh, quản lý bảng điểm và ngân hàng câu hỏi.
 - Màn chiếu: hiển thị câu hỏi lớn, đồng hồ đếm ngược và bảng điểm 5 thí sinh.
 - Điện thoại: tham gia bằng mã phòng/QR và gửi đáp án trong phần Tăng tốc.
-- Tăng tốc: MC chọn câu hỏi, 5 thí sinh gửi đáp án đồng thời; MC đánh dấu đúng/sai. Đáp án xếp theo thời điểm máy chủ nhận: 40 / 30 / 20 / 10 / 0. Đáp án sai nhận 0 điểm.
+- Tăng tốc: MC chọn câu hỏi, mỗi thí sinh gửi tối đa một đáp án cho từng câu; sang câu mới, ô trả lời tự mở lại, không cần tải lại trang. MC đánh dấu đúng/sai. Đáp án xếp theo thời điểm máy chủ nhận: 40 / 30 / 20 / 10 / 0. Đáp án sai nhận 0 điểm.
 - Về đích: tự xếp lượt theo điểm từ cao xuống thấp; mỗi thí sinh có 2 câu; MC chọn gói 10 / 20 / 30 điểm và quyết định đúng/sai.
 - Ngôi sao hy vọng: tối đa một lần mỗi thí sinh; đáp án đúng nhân đôi điểm, sai bị trừ gấp đôi.
-- Giành quyền: khi thí sinh chính trả lời sai, MC có thể bấm tên thí sinh khác hoặc nhấn phím 1–5 để xác định người giành quyền. MC chấm đúng/sai.
+- Giành quyền: khi thí sinh chính trả lời sai, 4 điện thoại còn lại có thể bấm chuông; người đầu tiên được ghi nhận bằng giao dịch nguyên tử. MC cũng có thể bấm tên thí sinh khác hoặc nhấn phím 1–5. MC chấm đúng/sai.
 - Có hai kho câu hỏi độc lập: Tăng tốc (câu hỏi + đáp án, không có gói điểm) và Về đích (mỗi câu thuộc gói 10/20/30). Mỗi kho có chức năng thêm, xóa, nhập và xuất JSON riêng. Có sẵn câu hỏi mẫu cho cả hai phần.
 
 ## Chạy thử
@@ -43,7 +43,7 @@ GitHub Pages là hosting tĩnh; để 5 thiết bị trao đổi dữ liệu tr�
     };
 
 6. Đặt firebase-config.js ở cùng thư mục với index.html và deploy lại GitHub Pages.
-7. Trong Realtime Database → Rules, dùng rules mẫu dưới đây rồi nhấn Publish:
+7. Trong Realtime Database → Rules, có thể mở file `database.rules.json` trong repository để sao chép toàn bộ cấu hình, hoặc dùng rules mẫu dưới đây; sau đó nhấn Publish. Mỗi lần cập nhật luật chơi có thay đổi Firebase, cần Publish Rules trong Firebase Console (đẩy code lên GitHub không tự cập nhật Firebase):
 
     {
       "rules": {
@@ -58,10 +58,10 @@ GitHub Pages là hosting tĩnh; để 5 thiết bị trao đổi dữ liệu tr�
               }
             },
             "buzz": {
-              "$question": {
-                ".read": "auth != null",
-                ".write": "auth != null && !data.exists() && root.child('rooms').child($room).child('players').child(auth.uid).exists() && root.child('rooms').child($room).child('players').child(auth.uid).child('slot').val() === newData.child('slot').val() && newData.child('uid').val() === auth.uid && root.child('rooms').child($room).child('state').child('phase').val() === 'final' && root.child('rooms').child($room).child('state').child('final').child('current').child('status').val() === 'steal' && root.child('rooms').child($room).child('state').child('final').child('current').child('qid').val() === $question && root.child('rooms').child($room).child('state').child('final').child('current').child('slot').val() !== newData.child('slot').val()",
-                ".validate": "newData.hasChildren(['slot', 'uid', 'name', 'claimedAt']) && newData.child('slot').isNumber() && newData.child('claimedAt').isNumber()"
+              ".read": "auth != null",
+              "$claimId": {
+                ".write": "auth != null && !data.exists() && root.child('rooms').child($room).child('players').child(auth.uid).exists() && root.child('rooms').child($room).child('players').child(auth.uid).child('slot').val() === newData.child('slot').val() && newData.child('uid').val() === auth.uid && root.child('rooms').child($room).child('state').child('phase').val() === 'final' && root.child('rooms').child($room).child('state').child('final').child('current').child('status').val() === 'steal' && root.child('rooms').child($room).child('state').child('final').child('current').child('buzzId').val() === $claimId && root.child('rooms').child($room).child('state').child('final').child('current').child('slot').val() !== newData.child('slot').val()",
+                ".validate": "newData.hasChildren(['slot', 'uid', 'name', 'claimedAt']) && newData.child('slot').isNumber() && newData.child('uid').isString() && newData.child('name').isString() && newData.child('claimedAt').isNumber()"
               }
             },
             "submissions": {
