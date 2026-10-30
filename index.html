@@ -119,25 +119,68 @@ function ensureAudio(){
  try{if(!audioContext)audioContext=new AudioContextClass();if(audioContext.state==='suspended')audioContext.resume();return true;}
  catch(err){console.warn('Không thể khởi tạo âm thanh:',err);return false;}
 }
+function playTone(ctx,frequency,endFrequency,duration,offset,wave,level){
+ const start=ctx.currentTime+offset,osc=ctx.createOscillator(),gain=ctx.createGain();
+ osc.type=wave;osc.frequency.setValueAtTime(frequency,start);
+ if(endFrequency&&endFrequency!==frequency)osc.frequency.exponentialRampToValueAtTime(Math.max(20,endFrequency),start+duration);
+ gain.gain.setValueAtTime(.0001,start);
+ gain.gain.exponentialRampToValueAtTime(Math.max(.0001,soundVolume*level),start+.025);
+ gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+ osc.connect(gain);gain.connect(ctx.destination);osc.start(start);osc.stop(start+duration+.04);
+}
+function playImpact(ctx,offset,level,decay=0.48){
+ const start=ctx.currentTime+offset,length=Math.max(1,Math.floor(ctx.sampleRate*decay));
+ const buffer=ctx.createBuffer(1,length,ctx.sampleRate),data=buffer.getChannelData(0);
+ for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*(1-i/length);
+ const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+ source.buffer=buffer;filter.type='lowpass';filter.frequency.setValueAtTime(1700,start);
+ filter.frequency.exponentialRampToValueAtTime(120,start+decay);
+ gain.gain.setValueAtTime(Math.max(.0001,soundVolume*level),start);
+ gain.gain.exponentialRampToValueAtTime(.0001,start+decay);
+ source.connect(filter);filter.connect(gain);gain.connect(ctx.destination);source.start(start);source.stop(start+decay+.02);
+}
 function playCue(name){
  if(!soundEnabled||!ensureAudio())return;
- const patterns={
-  start:[[660,.12,0,'sine',1],[880,.14,.13,'sine',1],[1100,.2,.29,'sine',1]],
-  tick:[[1050,.055,0,'square',.6]],
-  timeout:[[520,.22,0,'sawtooth',1],[360,.28,.24,'sawtooth',1],[240,.38,.54,'sawtooth',1]],
-  buzzer:[[880,.11,0,'square',1],[660,.16,.13,'square',1],[880,.13,.32,'square',1]],
-  correct:[[660,.13,0,'sine',1],[880,.16,.14,'sine',1],[1175,.26,.32,'sine',1]],
-  wrong:[[330,.18,0,'triangle',1],[247,.2,.2,'triangle',1],[185,.3,.43,'triangle',1]]
- };
- (patterns[name]||[]).forEach(note=>{
-  const [frequency,duration,offset,wave,level]=note,ctx=audioContext,start=ctx.currentTime+offset;
-  const oscillator=ctx.createOscillator(),gain=ctx.createGain();
-  oscillator.type=wave;oscillator.frequency.setValueAtTime(frequency,start);
-  gain.gain.setValueAtTime(.0001,start);
-  gain.gain.exponentialRampToValueAtTime(Math.max(.0002,soundVolume*.2*level),start+.012);
-  gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
-  oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start(start);oscillator.stop(start+duration+.025);
- });
+ const ctx=audioContext;
+ if(name==='tick'){playTone(ctx,1450,1050,.065,0,'square',.07);return;}
+ if(name==='start'){
+  playImpact(ctx,0,.22,.55);
+  playTone(ctx,92,48,.72,0,'sawtooth',.12);
+  playTone(ctx,196,392,.72,.06,'sawtooth',.10);
+  [[392,.22,.28],[494,.24,.48],[587,.4,.7],[784,.72,1.0]].forEach(n=>playTone(ctx,n[0],n[0],n[1],n[2],'sine',.105));
+  return;
+ }
+ if(name==='results'){
+  playImpact(ctx,0,.28,.85);
+  playTone(ctx,55,110,1.25,0,'sawtooth',.16);
+  playTone(ctx,220,660,1.1,.12,'sawtooth',.075);
+  [[440,.28,.25],[554,.28,.48],[659,.34,.73],[880,.45,1.0],[1109,.85,1.38]].forEach(n=>playTone(ctx,n[0],n[0],n[1],n[2],'sine',.12));
+  playImpact(ctx,1.36,.18,.65);
+  return;
+ }
+ if(name==='timeout'){
+  playImpact(ctx,0,.3,.62);
+  playTone(ctx,420,150,.78,0,'sawtooth',.15);
+  playTone(ctx,82,38,.82,.04,'triangle',.20);
+  playTone(ctx,260,95,.52,.45,'square',.12);
+  return;
+ }
+ if(name==='buzzer'){
+  playImpact(ctx,0,.14,.28);
+  playTone(ctx,360,690,.24,0,'sawtooth',.20);
+  playTone(ctx,720,390,.3,.25,'square',.12);
+  playTone(ctx,430,860,.22,.58,'sawtooth',.17);
+  return;
+ }
+ if(name==='correct'){
+  playImpact(ctx,0,.15,.38);
+  [[523,.28,0],[659,.28,.12],[784,.35,.25],[1047,.58,.42],[1319,.7,.66]].forEach(n=>playTone(ctx,n[0],n[0],n[1],n[2],'sine',.12));
+  return;
+ }
+ if(name==='wrong'){
+  playTone(ctx,250,115,.55,0,'triangle',.14);
+  playTone(ctx,95,42,.62,.03,'sawtooth',.14);
+ }
 }
 function playTimeoutOnce(key){if(!key||lastTimeoutKey===key)return;lastTimeoutKey=key;playCue('timeout');}
 function handleScreenSoundState(nextState){
@@ -152,18 +195,15 @@ function handleScreenSoundState(nextState){
   const key='boost:'+prevBoost.id;
   if(Date.now()>=Number(prevBoost.startedAt||0)+Number(prevBoost.duration||35)*1000-900)playTimeoutOnce(key);
  }
- if(nextState.phase==='boost'&&nextBoost.id&&nextBoost.marks){
-  const before=prevBoost.marks||{};
-  Object.keys(nextBoost.marks).forEach(slot=>{if(before[slot]!==nextBoost.marks[slot])playCue(nextBoost.marks[slot]===true?'correct':'wrong');});
+ if(nextState.phase==='boost'&&nextBoost.awarded&&!prevBoost.awarded){
+  playCue('results');soundCountdownKey='';soundLastSecond=null;
  }
  const current=nextState.phase==='final'&&nextState.final?nextState.final.current:null;
  const prior=previous.phase==='final'&&previous.final?previous.final.current:null;
  if(current&&current.status==='asking'&&(!prior||prior.qid!==current.qid||prior.status!=='asking')){
   playCue('start');soundCountdownKey='final:'+current.qid+':'+current.startedAt;soundLastSecond=null;lastTimeoutKey='';
  }else if(current&&prior&&current.qid===prior.qid&&current.status!==prior.status){
-  if(current.status==='steal')playCue('wrong');
-  else if(current.status==='steal-answer'){playCue('buzzer');soundCountdownKey='steal:'+current.qid+':'+current.startedAt;soundLastSecond=null;lastTimeoutKey='';}
-  else if(current.status==='done')playCue(current.outcome==='main-correct'||current.outcome==='steal-correct'?'correct':'wrong');
+  if(current.status==='steal-answer'){playCue('buzzer');soundCountdownKey='steal:'+current.qid+':'+current.startedAt;soundLastSecond=null;lastTimeoutKey='';}
  }
 }
 function updateSoundCountdown(){
@@ -394,9 +434,13 @@ function renderScreen(){
   resultPanel='<div class="screen-answer-reveal"><span>ĐÁP ÁN CHÍNH XÁC</span><strong>'+esc(boost.answer||'Chưa có đáp án mẫu')+'</strong></div><div class="screen-results"><div class="screen-results-head"><span>HẠNG</span><span>THÍ SINH</span><span>ĐÁP ÁN ĐÃ GỬI</span><span>TỐC ĐỘ</span><span>ĐIỂM</span><span>KẾT QUẢ</span></div>'+(rows||'')+missing+'</div>';
  }else if(state.phase==='final'&&state.final&&state.final.current){
    const current=state.final.current;
+   q=current.question||'';
+   who='<div class="screen-sub" style="font-weight:900;color:var(--gold);letter-spacing:.12em">LƯỢT CỦA '+esc(state.names[Number(current.slot)-1]||('THÍ SINH '+current.slot))+'</div>';
    if(current.status==='steal')sub='CƠ HỘI GIÀNH QUYỀN TRẢ LỜI';
    else if(current.status==='steal-answer')sub='🔔 '+esc(state.names[Number(current.buzzed)-1]||('Thí sinh '+current.buzzed))+' ĐÃ BẤM CHUÔNG NHANH NHẤT · ĐANG TRẢ LỜI';
+   else if(current.status==='done')sub='CÂU HỎI ĐÃ ĐƯỢC CHẤM · CHỜ MC CHUYỂN CÂU';
    else sub='Hãy suy nghĩ và đưa ra câu trả lời';
+   if(current.status==='asking'||current.status==='steal-answer')timer='<div class="timer" data-timer="final">--</div>';
  }else if(state.phase==='complete'){q='CHÚC MỪNG CÁC THÍ SINH!';sub='Kết quả chung cuộc';}
  else if(state.phase==='boost'){q='PHẦN THI TĂNG TỐC';sub='MC chuẩn bị câu hỏi tiếp theo'}
  else if(state.phase==='final'){q='PHẦN THI VỀ ĐÍCH';sub='Chờ MC chọn gói câu hỏi'}
