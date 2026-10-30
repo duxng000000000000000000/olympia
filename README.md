@@ -61,7 +61,7 @@ GitHub Pages là hosting tĩnh; để 5 thiết bị trao đổi dữ liệu tr�
               "boost": {
                 "$question": {
                   "$uid": {
-                    ".write": "auth != null && auth.uid === $uid && root.child('rooms').child($room).child('players').child(auth.uid).exists() && !data.exists()",
+                    ".write": "auth != null && auth.uid === $uid && root.child('rooms').child($room).child('players').child(auth.uid).exists() && root.child('rooms').child($room).child('state').child('boost').child('active').val() === true && root.child('rooms').child($room).child('state').child('boost').child('id').val() === $question && !data.exists()",
                     ".validate": "newData.hasChildren(['slot', 'answer', 'submittedAt'])"
                   }
                 }
