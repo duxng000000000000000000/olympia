@@ -109,7 +109,7 @@ let timerHandle = null, autoLocking = false;
 
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2600)}
-function defaultState(){return {roomCode:'',phase:'lobby',names:['Thí sinh 1','Thí sinh 2','Thí sinh 3','Thí sinh 4','Thí sinh 5'],scores:[0,0,0,0,0],boost:{active:false,id:'',qid:'',question:'',duration:20,startedAt:0,marks:{},used:[],result:[]},final:{order:[],orderIndex:0,qCount:[0,0,0,0,0],starUsed:[false,false,false,false,false],used:[],current:null},updatedAt:Date.now()}}
+function defaultState(){return {roomCode:'',phase:'lobby',names:['Thí sinh 1','Thí sinh 2','Thí sinh 3','Thí sinh 4','Thí sinh 5'],scores:[0,0,0,0,0],boost:{active:false,id:'',qid:'',question:'',duration:60,startedAt:0,marks:{},used:[],result:[]},final:{order:[],orderIndex:0,qCount:[0,0,0,0,0],starUsed:[false,false,false,false,false],used:[],current:null},updatedAt:Date.now()}}
 function normalizeState(raw){
  const base=defaultState();
  const value=raw&&typeof raw==='object'?raw:{};
@@ -344,7 +344,7 @@ async function startBoostQuestion(id){
  const q=boostBank.find(x=>x.id===id);if(!q)return;
  submissions={};
  if(state.boost&&state.boost.id&&!state.boost.awarded){toast('Hãy chấm điểm câu hiện tại trước');return}
- const b={active:true,id:'b'+Date.now(),qid:q.id,question:q.q,answer:q.a,duration:20,startedAt:Date.now(),marks:{},used:(state.boost&&state.boost.used)||[],result:[],awarded:false};
+ const b={active:true,id:'b'+Date.now(),qid:q.id,question:q.q,answer:q.a,duration:60,startedAt:Date.now(),marks:{},used:(state.boost&&state.boost.used)||[],result:[],awarded:false};
  await saveState(Object.assign({},state,{phase:'boost',boost:b}));
  if(cloud)bindSubmissions(b.id);
 }
@@ -374,7 +374,7 @@ async function chooseFinalPackage(points){
  if(!available.length){toast('Gói '+points+' điểm đã hết câu hỏi chưa dùng');return}
  const q=available[Math.floor(Math.random()*available.length)];
  const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(f));next.final.used=Array.isArray(next.final.used)?next.final.used:[];next.final.used.push(q.id);if(star){next.final.starUsed=Array.isArray(next.final.starUsed)?next.final.starUsed:[false,false,false,false,false];next.final.starUsed[slot-1]=true;}
- next.final.current={qid:q.id,question:q.q,slot:slot,points:points,star:star,status:'asking',duration:30,startedAt:Date.now(),buzzed:null,mainJudged:false,completed:false};
+ next.final.current={qid:q.id,question:q.q,slot:slot,points:points,star:star,status:'asking',duration:60,startedAt:Date.now(),buzzed:null,mainJudged:false,completed:false};
  await saveState(next);starNext=false;
 }
 async function judgeMain(correct){
@@ -385,7 +385,7 @@ async function judgeMain(correct){
 }
 async function buzz(slot){
  const c=state.final.current;if(!c||c.status!=='steal'||slot===c.slot)return;
- const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));next.final.current.buzzed=slot;next.final.current.status='steal-answer';next.final.current.startedAt=Date.now();next.final.current.duration=10;await saveState(next);
+ const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));next.final.current.buzzed=slot;next.final.current.status='steal-answer';next.final.current.startedAt=Date.now();next.final.current .duration=60;await saveState(next);
 }
 async function judgeSteal(correct){
  const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));const c=next.final.current;
@@ -450,7 +450,7 @@ document.addEventListener('click',async e=>{
   if(a==='delete-final-q'){if(confirm('Xóa câu hỏi Về đích này?')){finalBank=finalBank.filter(x=>x.id!==b.dataset.id);saveFinalBank();render()}}
   if(a==='export-boost-bank')exportBank('boost');
   if(a==='export-final-bank')exportBank('final');
-  if(a==='start-boost'){await saveState(Object.assign({},state,{phase:'boost',boost:{active:false,id:'',qid:'',question:'',duration:20,startedAt:0,marks:{},used:[],result:[]}}));}
+  if(a==='start-boost'){await saveState(Object.assign({},state,{phase:'boost',boost:{active:false,id:'',qid:'',question:'',duration:60,startedAt:0,marks:{},used:[],result:[]}}));}
   if(a==='boost-q')await startBoostQuestion(b.dataset.id);
   if(a==='mark-boost')await markBoost(Number(b.dataset.slot),b.dataset.mark==='true');
   if(a==='close-boost'){const n=Object.assign({},state);n.boost=Object.assign({},state.boost,{active:false});await saveState(n)}
