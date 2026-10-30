@@ -296,7 +296,16 @@ function renderPlayer(){
   const submitted=$('app').dataset.submitted==='yes';
   body='<div class="label">PHẦN THI TĂNG TỐC</div><div class="player-q">'+esc(b.question)+'</div><div class="timer" data-timer="boost">--</div>'+(submitted?'<div class="callout">Đã gửi câu trả lời. Hãy chờ MC công bố kết quả.</div>':'<form id="answer-form"><div class="field"><label>Đáp án của bạn</label><textarea class="answer-input" name="answer" required maxlength="240" placeholder="Nhập câu trả lời..."></textarea></div><button class="btn primary" style="width:100%" type="submit">GỬI ĐÁP ÁN</button></form>');
  }else if(state.phase==='final'){
-  body='<div class="label">PHẦN THI VỀ ĐÍCH</div><h2>Hãy cổ vũ cho các thí sinh!</h2><div class="callout">Trong phần Về đích, MC điều khiển câu hỏi và chuông giành quyền trên máy tính. Bạn không cần dùng điện thoại.</div>';
+  const cur=state.final&&state.final.current;
+  if(cur&&cur.status==='steal'&&playerSlot!==Number(cur.slot)){
+   body='<div class="label">PHẦN THI VỀ ĐÍCH · GIÀNH QUYỀN</div><h2>Ai nhanh hơn sẽ được trả lời!</h2><div class="callout warning">Thí sinh đang thi đã trả lời sai. Nhấn chuông ngay khi MC cho phép để giành quyền trả lời.</div><button class="btn gold" data-action="player-buzz" style="width:100%;min-height:100px;font-size:28px;margin-top:18px">🔔 BẤM CHUÔNG</button><p class="player-status">Bạn đang là '+esc(state.names[playerSlot-1]||('Thí sinh '+playerSlot))+'. Chỉ người bấm đầu tiên được quyền trả lời.</p>';
+  }else if(cur&&cur.status==='steal-answer'){
+   body='<div class="label">PHẦN THI VỀ ĐÍCH</div><h2>'+(Number(cur.buzzed)===playerSlot?'🎉 BẠN ĐÃ GIÀNH ĐƯỢC QUYỀN!':'Chuông đã có người bấm trước')+'</h2><div class="callout">'+esc(state.names[Number(cur.buzzed)-1]||'Thí sinh')+' đang trả lời. Hãy chờ MC chấm điểm.</div>';
+  }else if(cur&&cur.status==='steal'&&playerSlot===Number(cur.slot)){
+   body='<div class="label">PHẦN THI VỀ ĐÍCH</div><h2>Bạn đã trả lời sai</h2><div class="callout">Các thí sinh khác đang có cơ hội giành quyền trả lời.</div>';
+  }else{
+   body='<div class="label">PHẦN THI VỀ ĐÍCH</div><h2>Hãy cổ vũ cho các thí sinh!</h2><div class="callout">Khi thí sinh đang thi trả lời sai, nút chuông giành quyền sẽ tự xuất hiện trên điện thoại của 4 người còn lại.</div>';
+  }
  }else if(state.phase==='complete'){
   body='<div class="label">CHUNG CUỘC</div><h2>Cuộc thi đã kết thúc</h2><p class="player-q">Điểm của bạn: '+Number(state.scores[playerSlot-1]||0)+'</p>';
  }else{
@@ -384,8 +393,24 @@ async function judgeMain(correct){
  await saveState(next);
 }
 async function buzz(slot){
- const c=state.final.current;if(!c||c.status!=='steal'||slot===c.slot)return;
- const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));next.final.current.buzzed=slot;next.final.current.status='steal-answer';next.final.current.startedAt=Date.now();next.final.current .duration=60;await saveState(next);
+ if(!state||!state.final||!state.final.current)return;
+ if(!Number.isInteger(Number(slot))||Number(slot)<1||Number(slot)>5)return;
+ if(cloud&&db&&roomCode){
+  const ref=db.ref('rooms/'+roomCode+'/state');
+  const result=await ref.transaction(raw=>{
+   if(!raw||raw.phase!=='final'||!raw.final||!raw.final.current)return;
+   const c=raw.final.current;
+   if(c.status!=='steal'||c.buzzed||Number(slot)===Number(c.slot))return;
+   c.buzzed=Number(slot);c.status='steal-answer';c.startedAt=Date.now();c.duration=60;
+   raw.updatedAt=Date.now();
+   return raw;
+  });
+  if(!result.committed&&mode==='player')toast('Rất tiếc, người khác đã bấm chuông trước!');
+  else if(result.committed&&mode==='player')toast('Bạn đã giành được quyền trả lời!');
+  return;
+ }
+ const c=state.final.current;if(c.status!=='steal'||c.buzzed||Number(slot)===Number(c.slot))return;
+ const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));next.final.current.buzzed=Number(slot);next.final.current.status='steal-answer';next.final.current.startedAt=Date.now();next.final.current.duration=60;await saveState(next);
 }
 async function judgeSteal(correct){
  const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));const c=next.final.current;
@@ -459,7 +484,7 @@ document.addEventListener('click',async e=>{
   if(a==='start-final')await startFinal();
   if(a==='final-package')await chooseFinalPackage(Number(b.dataset.points));
   if(a==='judge-main')await judgeMain(b.dataset.correct==='true');
-  if(a==='buzz')await buzz(Number(b.dataset.slot));
+  if(a==='buzz')await buzz(Number(b.dataset.slot));\n   if(a==='player-buzz'){b.disabled=true;await buzz(playerSlot)}
   if(a==='judge-steal')await judgeSteal(b.dataset.correct==='true');
   if(a==='skip-steal'){const n=Object.assign({},state);n.final=JSON.parse(JSON.stringify(state.final));n.final.current.status='done';n.final.current.completed=true;await saveState(n)}
   if(a==='finish-current')await finishCurrent();
