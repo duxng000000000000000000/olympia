@@ -60,7 +60,7 @@ function loadBank(){try{const x=JSON.parse(localStorage.getItem(BANK_KEY)||'null
 function saveBank(){localStorage.setItem(BANK_KEY,JSON.stringify(bank))}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2600)}
-function defaultState(){return {roomCode:'',phase:'lobby',names:['Thí sinh 1','Thí sinh 2','Thí sinh 3','Thí sinh 4','Thí sinh 5'],scores:[0,0,0,0,0],boost:{active:false,id:'',question:'',duration:20,startedAt:0,marks:{}},final:{order:[],orderIndex:0,qCount:[0,0,0,0,0],starUsed:[false,false,false,false,false],used:[],current:null},updatedAt:Date.now()}}
+function defaultState(){return {roomCode:'',phase:'lobby',names:['Thí sinh 1','Thí sinh 2','Thí sinh 3','Thí sinh 4','Thí sinh 5'],scores:[0,0,0,0,0],boost:{active:false,id:'',qid:'',question:'',duration:20,startedAt:0,marks:{},used:[],result:[]},final:{order:[],orderIndex:0,qCount:[0,0,0,0,0],starUsed:[false,false,false,false,false],used:[],current:null},updatedAt:Date.now()}}
 function validConfig(){const c=window.FIREBASE_CONFIG||{};return !!(c.apiKey&&c.databaseURL&&c.projectId&&c.appId)}
 async function connectCloud(){
  if(!validConfig())return false;
@@ -153,12 +153,20 @@ function renderHost(){
  if(state.phase==='boost'){
   const b=state.boost||{};
   const entries=Object.values(submissions||{}).sort((a,c)=>(a.submittedAt||0)-(c.submittedAt||0));
-  const answerRows=entries.map((x,i)=>{
-   const mark=b.marks&&b.marks[x.slot];
-   const badge=mark===true?'<span style="color:var(--green)">ĐÚNG</span>':mark===false?'<span style="color:var(--red)">SAI</span>':'<span class="muted">CHƯA CHẤM</span>';
-   return '<div class="q-item"><span class="tag">#'+(i+1)+'</span><div class="qcopy"><b>'+esc(state.names[x.slot-1]||('Thí sinh '+x.slot))+'</b><p>'+esc(x.answer)+'</p><span class="tiny">'+badge+'</span></div><button class="btn green tiny" data-action="mark-boost" data-slot="'+x.slot+'" data-mark="true">Đúng</button><button class="btn red tiny" data-action="mark-boost" data-slot="'+x.slot+'" data-mark="false">Sai</button></div>';
-  }).join('');
-  boostHtml='<div class="panel"><div class="section-head"><h2>Điều khiển Tăng tốc</h2><span class="tag">'+(b.active?'ĐANG NHẬN ĐÁP ÁN':'ĐÃ KHÓA')+'</span></div><div class="callout">Câu hỏi đang chiếu: <b>'+esc(b.question||'Chưa có câu hỏi')+'</b></div><div class="statline" style="margin:12px 0"><div class="stat">Thời gian: <b>'+Number(b.duration||20)+' giây</b></div><div class="stat">Đã trả lời: <b>'+entries.length+'/5</b></div></div><div class="row"><button class="btn" data-action="close-boost" '+(!b.active?'disabled':'')+'>Khóa câu trả lời</button><button class="btn gold" data-action="award-boost" '+(b.active?'disabled':'')+'>Chấm và cộng điểm</button><button class="btn ghost" data-action="next-phase">Kết thúc Tăng tốc</button></div><div class="divider"></div><h3>Đáp án thí sinh gửi lên</h3>'+(answerRows||'<div class="empty">Chưa có câu trả lời nào.</div>')+'</div>';
+  if(!b.active){
+   const used=b.used||[];
+   const available=bank.filter(q=>!used.includes(q.id));
+   const results=(b.result||[]).map((x,i)=>'<div class="q-item"><span class="tag">HẠNG '+(i+1)+'</span><div class="qcopy"><b>'+esc(state.names[x.slot-1]||('Thí sinh '+x.slot))+'</b><p>'+esc(x.answer||'Chưa gửi')+'</p></div><strong style="color:var(--gold)">+'+Number(x.points||0)+' điểm</strong></div>').join('');
+   const questions=available.map(q=>'<div class="q-item"><span class="tag">'+q.points+' ĐIỂM</span><div class="qcopy"><strong>'+esc(q.topic||'Tổng hợp')+'</strong><p>'+esc(q.q)+'</p></div><button class="btn primary tiny" data-action="boost-q" data-id="'+esc(q.id)+'">Chiếu câu này</button></div>').join('');
+   boostHtml='<div class="panel"><div class="section-head"><h2>Điều khiển Tăng tốc</h2><span class="tag">CHỌN CÂU HỎI</span></div><div class="callout">Chọn một câu trong ngân hàng để chiếu lên màn hình. Khi câu hỏi bắt đầu, cả 5 thí sinh có thể gửi đáp án trên điện thoại. Tốc độ được tính theo thời điểm máy chủ nhận câu trả lời.</div>'+(results?'<div class="divider"></div><h3>Kết quả câu vừa rồi</h3>'+results:'')+'<div class="divider"></div><div class="section-head"><h3>Chọn câu hỏi tiếp theo</h3><span class="tiny muted">'+available.length+' câu chưa dùng</span></div>'+(questions||'<div class="empty">Đã dùng hết câu hỏi. Hãy thêm câu mới hoặc kết thúc phần thi.</div>')+'<div class="row" style="margin-top:12px"><button class="btn gold" data-action="next-phase">Kết thúc Tăng tốc · Sang Về đích</button></div></div>';
+  }else{
+   const answerRows=entries.map((x,i)=>{
+    const mark=b.marks&&b.marks[x.slot];
+    const badge=mark===true?'<span style="color:var(--green)">ĐÚNG</span>':mark===false?'<span style="color:var(--red)">SAI</span>':'<span class="muted">CHƯA CHẤM</span>';
+    return '<div class="q-item"><span class="tag">TỐC ĐỘ #'+(i+1)+'</span><div class="qcopy"><b>'+esc(state.names[x.slot-1]||('Thí sinh '+x.slot))+'</b><p>'+esc(x.answer)+'</p><span class="tiny">'+badge+'</span></div><button class="btn green tiny" data-action="mark-boost" data-slot="'+x.slot+'" data-mark="true">Đúng</button><button class="btn red tiny" data-action="mark-boost" data-slot="'+x.slot+'" data-mark="false">Sai</button></div>';
+   }).join('');
+   boostHtml='<div class="panel"><div class="section-head"><h2>Điều khiển Tăng tốc</h2><span class="tag">ĐANG CHIẾU CÂU HỎI</span></div><div class="callout">Câu hỏi đang chiếu: <b>'+esc(b.question||'Chưa có câu hỏi')+'</b></div><div class="statline" style="margin:12px 0"><div class="stat">Thời gian: <b>'+Number(b.duration||20)+' giây</b></div><div class="stat">Đã trả lời: <b>'+entries.length+'/5</b></div></div><div class="row"><button class="btn" data-action="close-boost">Khóa câu trả lời</button></div><div class="divider"></div><h3>Đáp án thí sinh gửi lên (theo thời gian nhận)</h3>'+(answerRows||'<div class="empty">Chưa có câu trả lời nào.</div>')+'<div class="tiny muted" style="margin-top:10px">Đánh dấu đúng/sai cho từng đáp án. Sau khi khóa câu trả lời, bấm chấm điểm để cộng 40, 30, 20, 10, 0 theo thứ tự gửi; câu sai nhận 0 điểm.</div><div class="row" style="margin-top:12px"><button class="btn gold" data-action="award-boost">Chấm và cộng điểm</button></div></div>';
+  }
  }
  let finalHtml='';
  if(state.phase==='final'){
@@ -252,7 +260,7 @@ async function submitAnswer(form){
 async function startBoostQuestion(id){
  const q=bank.find(x=>x.id===id);if(!q)return;
  submissions={};
- const b={active:true,id:'b'+Date.now(),question:q.q,duration:20,startedAt:Date.now(),marks:{}};
+ const b={active:true,id:'b'+Date.now(),qid:q.id,question:q.q,duration:20,startedAt:Date.now(),marks:{},used:(state.boost&&state.boost.used)||[],result:[]};
  await saveState(Object.assign({},state,{phase:'boost',boost:b}));
  if(cloud)bindSubmissions(b.id);
 }
@@ -261,10 +269,10 @@ async function markBoost(slot,mark){
 }
 async function awardBoost(){
  if(state.boost.active){toast('Hãy khóa câu trả lời trước');return}
- const entries=Object.values(submissions||{}).filter(x=>state.boost.marks&&state.boost.marks[x.slot]===true).sort((a,b)=>(a.submittedAt||0)-(b.submittedAt||0));
+ const entries=Object.values(submissions||{}).sort((a,b)=>(a.submittedAt||0)-(b.submittedAt||0));
  const pts=[40,30,20,10,0];const next=Object.assign({},state);next.scores=state.scores.slice();
- entries.forEach((x,i)=>{next.scores[x.slot-1]+=pts[Math.min(i,4)]});
- next.boost=Object.assign({},state.boost,{result:entries.map((x,i)=>({slot:x.slot,points:pts[Math.min(i,4)]}))});
+ const result=entries.map((x,i)=>{const correct=state.boost.marks&&state.boost.marks[x.slot]===true;const points=correct?pts[Math.min(i,4)]:0;if(correct)next.scores[x.slot-1]+=points;return {slot:x.slot,answer:x.answer,correct:!!correct,rank:i+1,points:points}});
+ next.boost=Object.assign({},state.boost,{result:result,used:[...(state.boost.used||[]),state.boost.qid]});
  await saveState(next);toast('Đã cộng điểm Tăng tốc');
 }
 async function startFinal(){
