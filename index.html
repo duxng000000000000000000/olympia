@@ -107,8 +107,6 @@ let cloud = false, joined = false, playerSlot = 0, playerName = '', hostPlayers 
 let stateListener = null, playerListener = null, submissionListener = null, starNext = false;
 let timerHandle = null, autoLocking = false;
 
-function loadBank(){try{const x=JSON.parse(localStorage.getItem(BANK_KEY)||'null');return Array.isArray(x)&&x.length?x:sampleBank.slice()}catch(e){return sampleBank.slice()}}
-function saveBank(){localStorage.setItem(BANK_KEY,JSON.stringify(bank))}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2600)}
 function defaultState(){return {roomCode:'',phase:'lobby',names:['Thí sinh 1','Thí sinh 2','Thí sinh 3','Thí sinh 4','Thí sinh 5'],scores:[0,0,0,0,0],boost:{active:false,id:'',qid:'',question:'',duration:20,startedAt:0,marks:{},used:[],result:[]},final:{order:[],orderIndex:0,qCount:[0,0,0,0,0],starUsed:[false,false,false,false,false],used:[],current:null},updatedAt:Date.now()}}
