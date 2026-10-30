@@ -506,7 +506,7 @@ document.addEventListener('click',async e=>{
   if(a==='reset-scores'){const n=Object.assign({},state);n.scores=[0,0,0,0,0];await saveState(n)}
   if(a==='join-room')await joinRoom();
  }
- catch(err){console.error(err);toast('Có lỗi: '+err.message)}
+ catch(err){if(a==='player-buzz')b.disabled=false;console.error(err);toast('Có lỗi: '+err.message)}
 });
 document.addEventListener('keydown',e=>{
  if(mode!=='host'||!state||state.phase!=='final'||!state.final.current||state.final.current.status!=='steal')return;
