@@ -10,7 +10,7 @@ Web game thi kiến thức phong cách gameshow, tối ưu cho một máy tính 
 - Về đích: tự xếp lượt theo điểm từ cao xuống thấp; mỗi thí sinh có 2 câu; MC chọn gói 10 / 20 / 30 điểm và quyết định đúng/sai.
 - Ngôi sao hy vọng: tối đa một lần mỗi thí sinh; đáp án đúng nhân đôi điểm, sai bị trừ gấp đôi.
 - Giành quyền: khi thí sinh chính trả lời sai, MC có thể bấm tên thí sinh khác hoặc nhấn phím 1–5 để xác định người giành quyền. MC chấm đúng/sai.
-- Thêm, xóa, nhập và xuất ngân hàng câu hỏi JSON. Có sẵn 15 câu hỏi mẫu.
+- Có hai kho câu hỏi độc lập: Tăng tốc (câu hỏi + đáp án, không có gói điểm) và Về đích (mỗi câu thuộc gói 10/20/30). Mỗi kho có chức năng thêm, xóa, nhập và xuất JSON riêng. Có sẵn câu hỏi mẫu cho cả hai phần.
 
 ## Chạy thử
 Mở index.html bằng trình duyệt. Khi chưa cấu hình Firebase, giao diện MC và màn chiếu có chế độ demo lưu trong trình duyệt. Chế độ demo không đồng bộ giữa các thiết bị khác nhau.
@@ -84,14 +84,28 @@ Firebase configuration in a browser is not a private secret. Database Rules are 
 7. Mỗi thí sinh trả lời hai câu Về đích. Hết năm lượt, chương trình hiện bảng điểm chung cuộc.
 
 ## Định dạng ngân hàng câu hỏi JSON
+
+**Tăng tốc** (không có trường `points`):
+
     [
       {
-        "id": "math-001",
-        "points": 10,
+        "id": "boost-001",
         "topic": "Toán học",
         "q": "Câu hỏi viết ở đây?",
         "a": "Đáp án dành cho MC"
       }
     ]
 
-points phải là 10, 20 hoặc 30. Trường a là đáp án tham khảo để MC đọc, không tự động quyết định đúng/sai.
+**Về đích** (bắt buộc `points` là 10, 20 hoặc 30):
+
+    [
+      {
+        "id": "final-001",
+        "points": 20,
+        "topic": "Toán học",
+        "q": "Câu hỏi viết ở đây?",
+        "a": "Đáp án dành cho MC"
+      }
+    ]
+
+Trường `a` là đáp án tham khảo để MC đọc, không tự động quyết định đúng/sai. Các câu hỏi đã có trong kho cũ được tự động giữ lại ở kho Về đích.
