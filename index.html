@@ -174,12 +174,12 @@ async function initHost(){
  if(initialRoom&&ok){
   roomCode=initialRoom;
   const snap=await db.ref('rooms/'+roomCode+'/state').once('value');
-  if(snap.exists()){state=snap.val();bindHostRoom()}else{state=defaultState();toast('Không tìm thấy phòng này')}
+  if(snap.exists()){state=normalizeState(snap.val());bindHostRoom()}else{state=defaultState();toast('Không tìm thấy phòng này')}
  }else{
   try{state=normalizeState(JSON.parse(localStorage.getItem(LOCAL_KEY)||'null'))}catch(e){state=defaultState()}
   if(!state)state=defaultState();
   roomCode=state.roomCode||'';
-  if(roomCode&&ok){const snap=await db.ref('rooms/'+roomCode+'/state').once('value');if(snap.exists()){state=snap.val();bindHostRoom()}}
+  if(roomCode&&ok){const snap=await db.ref('rooms/'+roomCode+'/state').once('value');if(snap.exists()){state=normalizeState(snap.val());bindHostRoom()}}
  }
  render();
 }
@@ -189,7 +189,7 @@ async function initScreen(){
  else{
   try{state=normalizeState(JSON.parse(localStorage.getItem(LOCAL_KEY)||'null'))}catch(e){state=defaultState()}
   if(!state)state=defaultState();
-  window.addEventListener('storage',e=>{if(e.key===LOCAL_KEY){try{state=JSON.parse(e.newValue);render()}catch(x){}}});
+  window.addEventListener('storage',e=>{if(e.key===LOCAL_KEY){try{state=normalizeState(JSON.parse(e.newValue));render()}catch(x){}}});
   render();
  }
 }
