@@ -59,8 +59,8 @@ GitHub Pages là hosting tĩnh; để 5 thiết bị trao đổi dữ liệu tr�
             },
             "buzz": {
               ".read": "auth != null",
-              "$claimId": {
-                ".write": "auth != null && !data.exists() && root.child('rooms').child($room).child('players').child(auth.uid).exists() && root.child('rooms').child($room).child('players').child(auth.uid).child('slot').val() === newData.child('slot').val() && newData.child('uid').val() === auth.uid && root.child('rooms').child($room).child('state').child('phase').val() === 'final' && root.child('rooms').child($room).child('state').child('final').child('current').child('status').val() === 'steal' && root.child('rooms').child($room).child('state').child('final').child('current').child('buzzId').val() === $claimId && root.child('rooms').child($room).child('state').child('final').child('current').child('slot').val() !== newData.child('slot').val()",
+              "$question": {
+                ".write": "auth != null && !data.exists() && root.child('rooms').child($room).child('players').child(auth.uid).exists() && root.child('rooms').child($room).child('players').child(auth.uid).child('slot').val() === newData.child('slot').val() && newData.child('uid').val() === auth.uid && root.child('rooms').child($room).child('state').child('phase').val() === 'final' && root.child('rooms').child($room).child('state').child('final').child('current').child('status').val() === 'steal' && root.child('rooms').child($room).child('state').child('final').child('current').child('qid').val() === $question && root.child('rooms').child($room).child('state').child('final').child('current').child('slot').val() !== newData.child('slot').val()",
                 ".validate": "newData.hasChildren(['slot', 'uid', 'name', 'claimedAt']) && newData.child('slot').isNumber() && newData.child('uid').isString() && newData.child('name').isString() && newData.child('claimedAt').isNumber()"
               }
             },
