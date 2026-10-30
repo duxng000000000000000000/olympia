@@ -53,8 +53,10 @@ const params = new URLSearchParams(location.search);
 const mode = params.get('mode') || 'host';
 const initialRoom = (params.get('room') || '').toUpperCase();
 const LOCAL_KEY = 'olympia-demo-state-v1';
-const BANK_KEY = 'olympia-question-bank-v1';
-const sampleBank = [
+const LEGACY_BANK_KEY = 'olympia-question-bank-v1';
+const BOOST_BANK_KEY = 'olympia-boost-bank-v1';
+const FINAL_BANK_KEY = 'olympia-final-bank-v2';
+const sampleFinalBank = [
 {id:'s10a',points:10,topic:'Khoa học',q:'Công thức hóa học của nước là gì?',a:'H₂O'},
 {id:'s10b',points:10,topic:'Địa lý',q:'Thủ đô của Nhật Bản là thành phố nào?',a:'Tokyo'},
 {id:'s10c',points:10,topic:'Toán học',q:'Phân số 3/4 tương đương bao nhiêu phần trăm?',a:'75%'},
@@ -71,7 +73,35 @@ const sampleBank = [
 {id:'s30d',points:30,topic:'Vật lý',q:'Định luật Ôm được biểu diễn bằng công thức nào?',a:'U = I × R'},
 {id:'s30e',points:30,topic:'Địa lý',q:'Đỉnh núi nào cao nhất thế giới so với mực nước biển?',a:'Everest'}
 ];
-let bank = loadBank();
+const sampleBoostBank = [
+{id:'b01',topic:'Khoa học',q:'Hành tinh nào gần Mặt Trời nhất?',a:'Sao Thủy'},
+{id:'b02',topic:'Toán học',q:'7 nhân 8 bằng bao nhiêu?',a:'56'},
+{id:'b03',topic:'Địa lý',q:'Việt Nam có bao nhiêu tỉnh, thành phố trực thuộc trung ương theo đơn vị hành chính cấp tỉnh hiện nay?',a:'34'},
+{id:'b04',topic:'Văn học',q:'Ai là tác giả bài thơ Đồng chí?',a:'Chính Hữu'},
+{id:'b05',topic:'Hóa học',q:'Ký hiệu hóa học của vàng là gì?',a:'Au'},
+{id:'b06',topic:'Sinh học',q:'Cơ quan nào bơm máu đi khắp cơ thể người?',a:'Tim'},
+{id:'b07',topic:'Lịch sử',q:'Chiến thắng Điện Biên Phủ diễn ra năm nào?',a:'1954'},
+{id:'b08',topic:'Vật lý',q:'Đơn vị đo cường độ dòng điện là gì?',a:'Ampe'},
+{id:'b09',topic:'Tiếng Anh',q:'Từ tiếng Anh “library” có nghĩa là gì?',a:'Thư viện'},
+{id:'b10',topic:'Toán học',q:'Số nguyên tố nhỏ nhất là số nào?',a:'2'}
+];
+function readBankArray(key){
+ try{const raw=localStorage.getItem(key);if(raw===null)return null;const value=JSON.parse(raw);return Array.isArray(value)?value:null}catch(e){return null}
+}
+function loadFinalBank(){
+ const current=readBankArray(FINAL_BANK_KEY);
+ const source=current!==null?current:(readBankArray(LEGACY_BANK_KEY)||sampleFinalBank);
+ return source.filter(x=>x&&x.q&&x.a&&[10,20,30].includes(Number(x.points))).map((x,i)=>({id:x.id||('final'+i),points:Number(x.points),topic:String(x.topic||'Tổng hợp'),q:String(x.q),a:String(x.a)}));
+}
+function loadBoostBank(){
+ const source=readBankArray(BOOST_BANK_KEY);
+ return (source===null?sampleBoostBank:source).filter(x=>x&&x.q&&x.a).map((x,i)=>({id:x.id||('boost'+i),topic:String(x.topic||'Tổng hợp'),q:String(x.q),a:String(x.a)}));
+}
+let boostBank = loadBoostBank();
+let finalBank = loadFinalBank();
+function saveBoostBank(){localStorage.setItem(BOOST_BANK_KEY,JSON.stringify(boostBank))}
+function saveFinalBank(){localStorage.setItem(FINAL_BANK_KEY,JSON.stringify(finalBank))}
+
 let state = null, db = null, auth = null, uid = null, roomCode = initialRoom;
 let cloud = false, joined = false, playerSlot = 0, playerName = '', hostPlayers = {}, submissions = {};
 let stateListener = null, playerListener = null, submissionListener = null, starNext = false;
@@ -82,6 +112,20 @@ function saveBank(){localStorage.setItem(BANK_KEY,JSON.stringify(bank))}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2600)}
 function defaultState(){return {roomCode:'',phase:'lobby',names:['Thí sinh 1','Thí sinh 2','Thí sinh 3','Thí sinh 4','Thí sinh 5'],scores:[0,0,0,0,0],boost:{active:false,id:'',qid:'',question:'',duration:20,startedAt:0,marks:{},used:[],result:[]},final:{order:[],orderIndex:0,qCount:[0,0,0,0,0],starUsed:[false,false,false,false,false],used:[],current:null},updatedAt:Date.now()}}
+function normalizeState(raw){
+ const base=defaultState();
+ const value=raw&&typeof raw==='object'?raw:{};
+ const boost=Object.assign({},base.boost,value.boost||{});
+ const final=Object.assign({},base.final,value.final||{});
+ boost.used=Array.isArray(boost.used)?boost.used:[];
+ boost.result=Array.isArray(boost.result)?boost.result:[];
+ boost.marks=boost.marks&&typeof boost.marks==='object'?boost.marks:{};
+ final.used=Array.isArray(final.used)?final.used:[];
+ final.order=Array.isArray(final.order)?final.order:[];
+ final.qCount=Array.isArray(final.qCount)?final.qCount:[0,0,0,0,0];
+ final.starUsed=Array.isArray(final.starUsed)?final.starUsed:[false,false,false,false,false];
+ return Object.assign(base,value,{names:Array.isArray(value.names)?value.names:base.names,scores:Array.isArray(value.scores)?value.scores:base.scores,boost:boost,final:final});
+}
 function validConfig(){const c=window.FIREBASE_CONFIG||{};return !!(c.apiKey&&c.databaseURL&&c.projectId&&c.appId)}
 async function connectCloud(){
  if(!validConfig())return false;
@@ -89,11 +133,11 @@ async function connectCloud(){
  catch(e){console.error(e);cloud=false;return false}
 }
 function localSave(){if(state){state.updatedAt=Date.now();localStorage.setItem(LOCAL_KEY,JSON.stringify(state));render()}}
-async function saveState(next){state=next;state.updatedAt=Date.now();render();if(cloud&&db&&roomCode){try{await db.ref('rooms/'+roomCode+'/state').set(state)}catch(e){toast('Không thể đồng bộ: '+e.message)}}else{localStorage.setItem(LOCAL_KEY,JSON.stringify(state))}}
+async function saveState(next){state=normalizeState(next);state.updatedAt=Date.now();render();if(cloud&&db&&roomCode){try{await db.ref('rooms/'+roomCode+'/state').set(state)}catch(e){toast('Không thể đồng bộ: '+e.message)}}else{localStorage.setItem(LOCAL_KEY,JSON.stringify(state))}}
 function bindState(path,callback){
  if(stateListener)stateListener.off();
  stateListener=db.ref(path+'/state');
- stateListener.on('value',snap=>{const v=snap.val();if(v){state=v;roomCode=v.roomCode||roomCode;callback&&callback();render()}});
+ stateListener.on('value',snap=>{const v=snap.val();if(v){state=normalizeState(v);roomCode=v.roomCode||roomCode;callback&&callback();render()}});
 }
 function bindHostRoom(){
  const root='rooms/'+roomCode;
@@ -132,7 +176,7 @@ async function initHost(){
   const snap=await db.ref('rooms/'+roomCode+'/state').once('value');
   if(snap.exists()){state=snap.val();bindHostRoom()}else{state=defaultState();toast('Không tìm thấy phòng này')}
  }else{
-  try{state=JSON.parse(localStorage.getItem(LOCAL_KEY)||'null')}catch(e){state=null}
+  try{state=normalizeState(JSON.parse(localStorage.getItem(LOCAL_KEY)||'null'))}catch(e){state=defaultState()}
   if(!state)state=defaultState();
   roomCode=state.roomCode||'';
   if(roomCode&&ok){const snap=await db.ref('rooms/'+roomCode+'/state').once('value');if(snap.exists()){state=snap.val();bindHostRoom()}}
@@ -143,7 +187,7 @@ async function initScreen(){
  const ok=await connectCloud();
  if(ok&&initialRoom){roomCode=initialRoom;bindState('rooms/'+roomCode,render)}
  else{
-  try{state=JSON.parse(localStorage.getItem(LOCAL_KEY)||'null')}catch(e){state=null}
+  try{state=normalizeState(JSON.parse(localStorage.getItem(LOCAL_KEY)||'null'))}catch(e){state=defaultState()}
   if(!state)state=defaultState();
   window.addEventListener('storage',e=>{if(e.key===LOCAL_KEY){try{state=JSON.parse(e.newValue);render()}catch(x){}}});
   render();
@@ -169,20 +213,21 @@ function renderHost(){
  let qr='<div class="callout warning">Chưa cấu hình Firebase. Chế độ demo chỉ đồng bộ giữa các tab trên cùng trình duyệt; muốn 5 điện thoại kết nối thật, hãy cấu hình Firebase theo README.</div>';
  if(cloud&&roomCode)qr='<div class="row"><div id="qr-player" class="qr"></div><div><b>Mã phòng: '+esc(roomCode)+'</b><div class="tiny muted">Quét QR để vào bằng điện thoại</div><div class="tiny"><a href="'+esc(playerUrl())+'" target="_blank">Mở link thí sinh</a></div></div></div>';
  const namesForm=(state.names||[]).map((n,i)=>'<div class="field"><label>Thí sinh '+(i+1)+'</label><input data-name="'+i+'" value="'+esc(n)+'" maxlength="32"></div>').join('');
- const bankHtml=bank.map(q=>'<div class="q-item"><span class="tag">'+q.points+' ĐIỂM</span><div class="qcopy"><strong>'+esc(q.topic||'Tổng hợp')+'</strong><p>'+esc(q.q)+'</p></div><button class="btn ghost tiny" data-action="delete-q" data-id="'+esc(q.id)+'">Xóa</button></div>').join('');
+ const boostBankHtml=boostBank.map(q=>'<div class="q-item"><span class="tag">TĂNG TỐC</span><div class="qcopy"><strong>'+esc(q.topic||'Tổng hợp')+'</strong><p>'+esc(q.q)+'</p></div><button class="btn ghost tiny" data-action="delete-boost-q" data-id="'+esc(q.id)+'">Xóa</button></div>').join('');
+ const finalBankHtml=finalBank.map(q=>'<div class="q-item"><span class="tag">'+q.points+' ĐIỂM</span><div class="qcopy"><strong>'+esc(q.topic||'Tổng hợp')+'</strong><p>'+esc(q.q)+'</p></div><button class="btn ghost tiny" data-action="delete-final-q" data-id="'+esc(q.id)+'">Xóa</button></div>').join('');
  let boostHtml='';
  if(state.phase==='boost'){
   const b=state.boost||{};
   const entries=Object.values(submissions||{}).sort((a,c)=>(a.submittedAt||0)-(c.submittedAt||0));
   const used=b.used||[];
-  const available=bank.filter(q=>!used.includes(q.id));
+  const available=boostBank.filter(q=>!used.includes(q.id));
   const results=(b.result||[]).map(x=>'<div class="q-item"><span class="tag">HẠNG '+x.rank+'</span><div class="qcopy"><b>'+esc(state.names[x.slot-1]||('Thí sinh '+x.slot))+'</b><p>'+esc(x.answer||'Chưa gửi')+' · '+(x.correct?'ĐÚNG':'SAI')+'</p></div><strong style="color:var(--gold)">'+Number(x.points||0)+' điểm</strong></div>').join('');
   const answerRows=entries.map((x,i)=>{
    const mark=b.marks&&b.marks[x.slot];
    const badge=mark===true?'<span style="color:var(--green)">ĐÚNG</span>':mark===false?'<span style="color:var(--red)">SAI</span>':'<span class="muted">CHƯA CHẤM</span>';
    return '<div class="q-item"><span class="tag">TỐC ĐỘ #'+(i+1)+'</span><div class="qcopy"><b>'+esc(state.names[x.slot-1]||('Thí sinh '+x.slot))+'</b><p>'+esc(x.answer)+'</p><span class="tiny">'+badge+'</span></div><button class="btn green tiny" data-action="mark-boost" data-slot="'+x.slot+'" data-mark="true">Đúng</button><button class="btn red tiny" data-action="mark-boost" data-slot="'+x.slot+'" data-mark="false">Sai</button></div>';
   }).join('');
-  const questions=available.map(q=>'<div class="q-item"><span class="tag">'+q.points+' ĐIỂM</span><div class="qcopy"><strong>'+esc(q.topic||'Tổng hợp')+'</strong><p>'+esc(q.q)+'</p></div><button class="btn primary tiny" data-action="boost-q" data-id="'+esc(q.id)+'">Chiếu câu này</button></div>').join('');
+  const questions=available.map(q=>'<div class="q-item"><span class="tag">'+esc(q.topic||'Tổng hợp')+'</span><div class="qcopy"><strong>'+esc(q.topic||'Tổng hợp')+'</strong><p>'+esc(q.q)+'</p></div><button class="btn primary tiny" data-action="boost-q" data-id="'+esc(q.id)+'">Chiếu câu này</button></div>').join('');
   if(b.active){
    boostHtml='<div class="panel"><div class="section-head"><h2>Điều khiển Tăng tốc</h2><span class="tag">ĐANG CHIẾU CÂU HỎI</span></div><div class="callout">Câu hỏi đang chiếu: <b>'+esc(b.question||'Chưa có câu hỏi')+'</b></div><div class="statline" style="margin:12px 0"><div class="stat">Thời gian: <b>'+Number(b.duration||20)+' giây</b></div><div class="stat">Đã trả lời: <b>'+entries.length+'/5</b></div></div><div class="row"><button class="btn" data-action="close-boost">Khóa câu trả lời</button></div><div class="divider"></div><h3>Đáp án thí sinh gửi lên (theo thời gian nhận)</h3>'+(answerRows||'<div class="empty">Chưa có câu trả lời nào.</div>')+'<div class="tiny muted" style="margin-top:10px">Đánh dấu đúng/sai cho từng đáp án. Sau khi khóa câu trả lời, chương trình mới cho phép chấm điểm.</div></div>';
   }else{
@@ -199,7 +244,7 @@ function renderHost(){
    const currentName=done?'Đã hoàn thành':state.names[slot-1];
    finalHtml='<div class="panel"><div class="section-head"><h2>Điều khiển Về đích</h2><span class="tag">MỖI THÍ SINH 2 CÂU</span></div><div class="callout">Thứ tự hiện tại: <b>'+esc(currentName||'')+'</b>. Người có điểm cao hơn được thi trước.</div><div class="statline" style="margin:12px 0">'+orderHtml+'</div>'+(done?'<div class="callout warning">Đã hoàn thành phần Về đích. Bảng điểm chung cuộc đã được cập nhật.</div>':'<p class="muted tiny">Hỏi thí sinh chọn gói điểm, sau đó chọn gói tương ứng bên dưới. Bật Ngôi sao hy vọng trước khi chọn gói nếu thí sinh muốn sử dụng.</p><label class="row"><input id="star-next" type="checkbox" '+(starNext?'checked':'')+' '+(f.starUsed[slot-1]?'disabled':'')+'> ⭐ Ngôi sao hy vọng '+(f.starUsed[slot-1]?'(đã sử dụng)':'(nhân đôi điểm và điểm trừ)')+'</label><div class="package-row" style="margin-top:12px"><button class="package" data-action="final-package" data-points="10">10<small>ĐIỂM</small></button><button class="package" data-action="final-package" data-points="20">20<small>ĐIỂM</small></button><button class="package" data-action="final-package" data-points="30">30<small>ĐIỂM</small></button></div>')+'</div>';
   }else{
-   const bankQ=bank.find(q=>q.id===cur.qid);
+   const bankQ=finalBank.find(q=>q.id===cur.qid);
    const multiplier=cur.star?2:1;
    let actionHtml='';
    if(cur.status==='asking'){
@@ -215,7 +260,7 @@ function renderHost(){
   }
  }
  const finishSummary=state.phase==='complete'?'<div class="panel"><h2>🏆 Chung cuộc</h2><div class="score-grid">'+scoreboardHtml(false)+'</div><button class="btn gold" data-action="reset">Tạo ván mới</button></div>':'';
- $('app').innerHTML='<div class="wrap"><div class="top"><div class="brand"><div class="brand-mark">★</div><div><h1>ĐƯỜNG ĐUA TRI THỨC</h1><small>PHIÊN BẢN SÂN CHƠI KIẾN THỨC</small></div></div><div class="top-actions"><span class="pill">Kết nối: <b>'+(cloud?'Trực tuyến':'Demo')+'</b></span><span class="pill">Phòng: <b>'+(roomCode||'Chưa tạo')+'</b></span><button class="btn" data-action="create-room">Tạo phòng</button><a class="btn ghost" href="'+esc(screenUrl())+'" target="_blank">Mở màn chiếu ↗</a></div></div><div class="grid two"><div class="panel"><div class="section-head"><h2>Bảng điểm</h2><span class="tag">'+phaseText+'</span></div><div class="score-grid">'+scoreboardHtml(false)+'</div><div class="divider"></div><div class="row"><button class="btn primary" data-action="start-boost">Bắt đầu Tăng tốc</button><button class="btn gold" data-action="start-final">Bắt đầu Về đích</button><button class="btn ghost" data-action="reset-scores">Đặt lại điểm</button></div></div><div class="panel"><div class="section-head"><h2>Phòng thi</h2><span class="tag">'+online+'/5 ĐIỆN THOẠI</span></div>'+qr+'<div class="divider"></div><h3>Danh sách thí sinh</h3>'+namesForm+'<button class="btn" data-action="save-names">Lưu tên thí sinh</button></div></div><div style="height:16px"></div>'+(boostHtml||'')+(finalHtml||'')+finishSummary+'<div style="height:16px"></div><div class="grid two"><div class="panel"><div class="section-head"><h2>Ngân hàng câu hỏi mẫu</h2><span class="tag">'+bank.length+' CÂU</span></div><div class="question-list">'+bankHtml+'</div><div class="divider"></div><form id="add-question"><div class="grid two"><div class="field"><label>Gói điểm</label><select name="points"><option value="10">10 điểm</option><option value="20">20 điểm</option><option value="30">30 điểm</option></select></div><div class="field"><label>Chủ đề</label><input name="topic" placeholder="Ví dụ: Toán học"></div></div><div class="field"><label>Nội dung câu hỏi</label><textarea name="q" required placeholder="Nhập câu hỏi mới..."></textarea></div><div class="field"><label>Đáp án (chỉ MC xem)</label><input name="a" required placeholder="Đáp án đúng"></div><button class="btn primary" type="submit">+ Thêm câu hỏi</button></form><div class="row" style="margin-top:12px"><button class="btn ghost" data-action="export-bank">Xuất ngân hàng JSON</button><label class="btn ghost">Nhập JSON<input id="import-bank" type="file" accept=".json,application/json" hidden></label></div></div><div class="panel"><h2>Luật chơi đang áp dụng</h2><div class="callout"> <b>Tăng tốc:</b> 5 thí sinh gửi đáp án bằng điện thoại. MC chấm đúng/sai; các đáp án đúng được xếp theo thời gian gửi: 40 – 30 – 20 – 10 – 0 điểm.</div><div class="callout" style="margin-top:10px"><b>Về đích:</b> thi theo thứ tự điểm từ cao xuống thấp. Mỗi người chọn 2 gói câu hỏi 10/20/30. MC quyết định đúng/sai; khi người chính sai, MC mở chuông để thí sinh khác giành quyền.</div><div class="callout warning" style="margin-top:10px"><b>Ngôi sao hy vọng:</b> mỗi thí sinh dùng tối đa 1 lần. Trả lời đúng được nhân đôi điểm; trả lời sai bị trừ gấp đôi. Người giành quyền trả lời được tính điểm thường.</div><p class="tiny muted">Các quy tắc có thể điều chỉnh trực tiếp bằng cách sửa mã nguồn. Câu hỏi mẫu chỉ để chạy thử; hãy kiểm tra đáp án và thay bằng bộ câu hỏi của chương trình trước khi tổ chức.</p></div></div><div class="footer-note">ĐƯỜNG ĐUA TRI THỨC · Dùng trên màn chiếu + điện thoại · Không cần cài ứng dụng</div></div>';
+ $('app').innerHTML='<div class="wrap"><div class="top"><div class="brand"><div class="brand-mark">★</div><div><h1>ĐƯỜNG ĐUA TRI THỨC</h1><small>PHIÊN BẢN SÂN CHƠI KIẾN THỨC</small></div></div><div class="top-actions"><span class="pill">Kết nối: <b>'+(cloud?'Trực tuyến':'Demo')+'</b></span><span class="pill">Phòng: <b>'+(roomCode||'Chưa tạo')+'</b></span><button class="btn" data-action="create-room">Tạo phòng</button><a class="btn ghost" href="'+esc(screenUrl())+'" target="_blank">Mở màn chiếu ↗</a></div></div><div class="grid two"><div class="panel"><div class="section-head"><h2>Bảng điểm</h2><span class="tag">'+phaseText+'</span></div><div class="score-grid">'+scoreboardHtml(false)+'</div><div class="divider"></div><div class="row"><button class="btn primary" data-action="start-boost">Bắt đầu Tăng tốc</button><button class="btn gold" data-action="start-final">Bắt đầu Về đích</button><button class="btn ghost" data-action="reset-scores">Đặt lại điểm</button></div></div><div class="panel"><div class="section-head"><h2>Phòng thi</h2><span class="tag">'+online+'/5 ĐIỆN THOẠI</span></div>'+qr+'<div class="divider"></div><h3>Danh sách thí sinh</h3>'+namesForm+'<button class="btn" data-action="save-names">Lưu tên thí sinh</button></div></div><div style="height:16px"></div>'+(boostHtml||'')+(finalHtml||'')+finishSummary+'<div style="height:16px"></div><div class="grid two"><div class="panel"><div class="section-head"><h2>Ngân hàng câu hỏi Tăng tốc</h2><span class="tag">'+boostBank.length+' CÂU</span></div><div class="question-list">'+boostBankHtml+'</div><div class="divider"></div><form id="add-boost-question"><div class="field"><label>Chủ đề</label><input name="topic" placeholder="Ví dụ: Toán học"></div><div class="field"><label>Nội dung câu hỏi</label><textarea name="q" required placeholder="Nhập câu hỏi Tăng tốc..."></textarea></div><div class="field"><label>Đáp án chuẩn (chỉ MC xem)</label><input name="a" required placeholder="Đáp án đúng"></div><button class="btn primary" type="submit">+ Thêm câu hỏi Tăng tốc</button></form><div class="row" style="margin-top:12px"><button class="btn ghost" data-action="export-boost-bank">Xuất bộ Tăng tốc</button><label class="btn ghost">Nhập bộ Tăng tốc<input id="import-boost-bank" type="file" accept=".json,application/json" hidden></label></div></div><div class="panel"><div class="section-head"><h2>Ngân hàng câu hỏi Về đích</h2><span class="tag">'+finalBank.length+' CÂU</span></div><div class="question-list">'+finalBankHtml+'</div><div class="divider"></div><form id="add-final-question"><div class="grid two"><div class="field"><label>Gói điểm</label><select name="points"><option value="10">10 điểm</option><option value="20">20 điểm</option><option value="30">30 điểm</option></select></div><div class="field"><label>Chủ đề</label><input name="topic" placeholder="Ví dụ: Toán học"></div></div><div class="field"><label>Nội dung câu hỏi</label><textarea name="q" required placeholder="Nhập câu hỏi Về đích..."></textarea></div><div class="field"><label>Đáp án chuẩn (chỉ MC xem)</label><input name="a" required placeholder="Đáp án đúng"></div><button class="btn primary" type="submit">+ Thêm câu hỏi Về đích</button></form><div class="row" style="margin-top:12px"><button class="btn ghost" data-action="export-final-bank">Xuất bộ Về đích</button><label class="btn ghost">Nhập bộ Về đích<input id="import-final-bank" type="file" accept=".json,application/json" hidden></label></div></div></div><div class="grid two" style="margin-top:16px"><div class="panel"><h2>Luật chơi đang áp dụng</h2><div class="callout"><b>Tăng tốc:</b> 5 thí sinh gửi đáp án bằng điện thoại. MC chấm đúng/sai; các đáp án đúng được xếp theo thời gian gửi: 40 – 30 – 20 – 10 – 0 điểm. Ngân hàng Tăng tốc không dùng gói 10/20/30.</div><div class="callout" style="margin-top:10px"><b>Về đích:</b> thi theo thứ tự điểm từ cao xuống thấp. Mỗi người chọn 2 câu trong các gói 10/20/30. MC quyết định đúng/sai; khi người chính sai, MC mở chuông để thí sinh khác giành quyền.</div><div class="callout warning" style="margin-top:10px"><b>Ngôi sao hy vọng:</b> mỗi thí sinh dùng tối đa 1 lần. Trả lời đúng được nhân đôi điểm; sai bị trừ gấp đôi. Người giành quyền trả lời được tính điểm thường.</div><p class="tiny muted">Hai ngân hàng câu hỏi được lưu riêng và có chức năng nhập/xuất JSON độc lập.</p></div></div><div class="footer-note">ĐƯỜNG ĐUA TRI THỨC · Dùng trên màn chiếu + điện thoại · Không cần cài ứng dụng</div></div>';
  if(cloud&&roomCode&&$('qr-player')&&window.QRCode){new QRCode($('qr-player'),{text:playerUrl(),width:112,height:112})}
 }
 function renderScreen(){
@@ -264,10 +309,17 @@ function renderPlayer(){
 function render(){
  if(mode==='screen')renderScreen();else if(mode==='player')renderPlayer();else renderHost();
 }
-function addQuestion(form){
- const fd=new FormData(form);const q=String(fd.get('q')||'').trim(),a=String(fd.get('a')||'').trim();
+function addBoostQuestion(form){
+ const fd=new FormData(form),q=String(fd.get('q')||'').trim(),a=String(fd.get('a')||'').trim();
  if(!q||!a)return;
- bank.push({id:'q'+Date.now(),points:Number(fd.get('points')),topic:String(fd.get('topic')||'Tổng hợp'),q:q,a:a});saveBank();form.reset();render();toast('Đã thêm câu hỏi');
+ boostBank.push({id:'boost'+Date.now(),topic:String(fd.get('topic')||'Tổng hợp'),q:q,a:a});
+ saveBoostBank();form.reset();render();toast('Đã thêm câu hỏi Tăng tốc');
+}
+function addFinalQuestion(form){
+ const fd=new FormData(form),q=String(fd.get('q')||'').trim(),a=String(fd.get('a')||'').trim();
+ if(!q||!a)return;
+ finalBank.push({id:'final'+Date.now(),points:Number(fd.get('points')),topic:String(fd.get('topic')||'Tổng hợp'),q:q,a:a});
+ saveFinalBank();form.reset();render();toast('Đã thêm câu hỏi Về đích');
 }
 async function joinRoom(){
  if(!cloud||!db){toast('Chưa kết nối Firebase');return}
@@ -291,7 +343,7 @@ async function submitAnswer(form){
  if(result.committed){$('app').dataset.submitted='yes';render();toast('Đã gửi đáp án!')}else toast('Bạn đã gửi đáp án cho câu này rồi');
 }
 async function startBoostQuestion(id){
- const q=bank.find(x=>x.id===id);if(!q)return;
+ const q=boostBank.find(x=>x.id===id);if(!q)return;
  submissions={};
  if(state.boost&&state.boost.id&&!state.boost.awarded){toast('Hãy chấm điểm câu hiện tại trước');return}
  const b={active:true,id:'b'+Date.now(),qid:q.id,question:q.q,answer:q.a,duration:20,startedAt:Date.now(),marks:{},used:(state.boost&&state.boost.used)||[],result:[],awarded:false};
@@ -317,11 +369,13 @@ async function startFinal(){
  starNext=false;
 }
 async function chooseFinalPackage(points){
- const f=state.final;const slot=f.order[f.orderIndex];const star=$('star-next')?$('star-next').checked:false;
- const available=bank.filter(x=>x.points===points&&!f.used.includes(x.id));
+ const f=state.final||{};const order=Array.isArray(f.order)?f.order:[];const slot=order[Number(f.orderIndex)||0];const star=$('star-next')?$('star-next').checked:false;
+ if(!slot){toast('Không tìm thấy lượt thi Về đích. Hãy bắt đầu lại phần thi.');return}
+ const used=Array.isArray(f.used)?f.used:[];
+ const available=finalBank.filter(x=>Number(x.points)===Number(points)&&!used.includes(x.id));
  if(!available.length){toast('Gói '+points+' điểm đã hết câu hỏi chưa dùng');return}
  const q=available[Math.floor(Math.random()*available.length)];
- const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(f));next.final.used.push(q.id);if(star)next.final.starUsed[slot-1]=true;
+ const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(f));next.final.used=Array.isArray(next.final.used)?next.final.used:[];next.final.used.push(q.id);if(star){next.final.starUsed=Array.isArray(next.final.starUsed)?next.final.starUsed:[false,false,false,false,false];next.final.starUsed[slot-1]=true;}
  next.final.current={qid:q.id,question:q.q,slot:slot,points:points,star:star,status:'asking',duration:30,startedAt:Date.now(),buzzed:null,mainJudged:false,completed:false};
  await saveState(next);starNext=false;
 }
@@ -352,18 +406,38 @@ async function resetGame(){
  if(!confirm('Tạo ván mới và xóa toàn bộ điểm hiện tại?'))return;
  const next=defaultState();next.roomCode=roomCode;await saveState(next);submissions={};starNext=false;
 }
-function exportBank(){
- const blob=new Blob([JSON.stringify(bank,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ngan-hang-cau-hoi-olympia.json';a.click();URL.revokeObjectURL(url);
+function exportBank(which){
+ const list=which==='boost'?boostBank:finalBank;
+ const blob=new Blob([JSON.stringify(list,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=which==='boost'?'ngan-hang-tang-toc.json':'ngan-hang-ve-dich.json';a.click();URL.revokeObjectURL(url);
 }
-function downloadFile(file){
- const reader=new FileReader();reader.onload=()=>{try{const val=JSON.parse(reader.result);if(!Array.isArray(val)||!val.every(x=>x.q&&x.a&&[10,20,30].includes(Number(x.points))))throw new Error('Cấu trúc không hợp lệ');bank=val.map((x,i)=>({id:x.id||('import'+Date.now()+i),points:Number(x.points),topic:x.topic||'Tổng hợp',q:String(x.q),a:String(x.a)}));saveBank();render();toast('Đã nhập ngân hàng câu hỏi')}catch(e){toast('File JSON không hợp lệ')}};reader.readAsText(file);
+function downloadBankFile(file,which){
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const val=JSON.parse(reader.result);
+   if(!Array.isArray(val)||!val.every(x=>x&&x.q&&x.a&&typeof x.q==='string'&&typeof x.a==='string'))throw new Error('Cấu trúc không hợp lệ');
+   if(which==='boost'){
+    boostBank=val.map((x,i)=>({id:x.id||('boost-import-'+Date.now()+'-'+i),topic:x.topic||'Tổng hợp',q:String(x.q),a:String(x.a)}));
+    saveBoostBank();
+   }else{
+    if(!val.every(x=>[10,20,30].includes(Number(x.points))))throw new Error('Mỗi câu Về đích phải có gói 10, 20 hoặc 30 điểm');
+    finalBank=val.map((x,i)=>({id:x.id||('final-import-'+Date.now()+'-'+i),points:Number(x.points),topic:x.topic||'Tổng hợp',q:String(x.q),a:String(x.a)}));
+    saveFinalBank();
+   }
+   render();toast('Đã nhập ngân hàng '+(which==='boost'?'Tăng tốc':'Về đích'));
+  }catch(e){toast('File JSON không hợp lệ: '+e.message)}
+ };
+ reader.readAsText(file);
 }
 document.addEventListener('submit',e=>{
- if(e.target.id==='add-question'){e.preventDefault();addQuestion(e.target)}
+ if(e.target.id==='add-boost-question'){e.preventDefault();addBoostQuestion(e.target)}
+ if(e.target.id==='add-final-question'){e.preventDefault();addFinalQuestion(e.target)}
  if(e.target.id==='answer-form'){e.preventDefault();submitAnswer(e.target)}
 });
 document.addEventListener('change',e=>{
- if(e.target.id==='import-bank'&&e.target.files[0])downloadFile(e.target.files[0]);
+ if(e.target.id==='import-boost-bank'&&e.target.files[0])downloadBankFile(e.target.files[0],'boost');
+ if(e.target.id==='import-final-bank'&&e.target.files[0])downloadBankFile(e.target.files[0],'final');
  if(e.target.id==='star-next')starNext=e.target.checked;
  if(e.target.dataset.name!==undefined&&mode==='host'){
   const i=Number(e.target.dataset.name);const next=Object.assign({},state);next.names=state.names.slice();next.names[i]=e.target.value.trim()||('Thí sinh '+(i+1));saveState(next)
@@ -374,8 +448,10 @@ document.addEventListener('click',async e=>{
  try{
   if(a==='create-room')await createRoom();
   if(a==='save-names'){const inputs=document.querySelectorAll('[data-name]');const next=Object.assign({},state);next.names=Array.from(inputs).map((x,i)=>x.value.trim()||('Thí sinh '+(i+1)));await saveState(next);toast('Đã lưu tên')}
-  if(a==='delete-q'){if(confirm('Xóa câu hỏi này?')){bank=bank.filter(x=>x.id!==b.dataset.id);saveBank();render()}}
-  if(a==='export-bank')exportBank();
+  if(a==='delete-boost-q'){if(confirm('Xóa câu hỏi Tăng tốc này?')){boostBank=boostBank.filter(x=>x.id!==b.dataset.id);saveBoostBank();render()}}
+  if(a==='delete-final-q'){if(confirm('Xóa câu hỏi Về đích này?')){finalBank=finalBank.filter(x=>x.id!==b.dataset.id);saveFinalBank();render()}}
+  if(a==='export-boost-bank')exportBank('boost');
+  if(a==='export-final-bank')exportBank('final');
   if(a==='start-boost'){await saveState(Object.assign({},state,{phase:'boost',boost:{active:false,id:'',qid:'',question:'',duration:20,startedAt:0,marks:{},used:[],result:[]}}));}
   if(a==='boost-q')await startBoostQuestion(b.dataset.id);
   if(a==='mark-boost')await markBoost(Number(b.dataset.slot),b.dataset.mark==='true');
