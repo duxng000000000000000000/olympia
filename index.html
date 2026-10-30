@@ -292,7 +292,7 @@ async function chooseFinalPackage(points){
 async function judgeMain(correct){
  const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));const c=next.final.current;const mult=c.star?2:1;
  if(correct){next.scores[c.slot-1]+=c.points*mult;c.status='done';c.completed=true;c.outcome='main-correct'}
- else{next.scores[c.slot-1]-=c.points*mult;c.status='steal';c.mainJudged=true;c.outcome='main-wrong'}
+ else{if(c.star)next.scores[c.slot-1]-=c.points*mult;c.status='steal';c.mainJudged=true;c.outcome='main-wrong'}
  await saveState(next);
 }
 async function buzz(slot){
@@ -301,7 +301,7 @@ async function buzz(slot){
 }
 async function judgeSteal(correct){
  const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));const c=next.final.current;
- if(correct)next.scores[c.buzzed-1]+=c.points;else next.scores[c.buzzed-1]-=c.points;
+ if(correct)next.scores[c.buzzed-1]+=c.points;
  c.status='done';c.completed=true;c.outcome=correct?'steal-correct':'steal-wrong';await saveState(next);
 }
 async function finishCurrent(){
@@ -340,7 +340,7 @@ document.addEventListener('click',async e=>{
   if(a==='save-names'){const inputs=document.querySelectorAll('[data-name]');const next=Object.assign({},state);next.names=Array.from(inputs).map((x,i)=>x.value.trim()||('Thí sinh '+(i+1)));await saveState(next);toast('Đã lưu tên')}
   if(a==='delete-q'){if(confirm('Xóa câu hỏi này?')){bank=bank.filter(x=>x.id!==b.dataset.id);saveBank();render()}}
   if(a==='export-bank')exportBank();
-  if(a==='start-boost'){await saveState(Object.assign({},state,{phase:'boost',boost:{active:false,id:'',question:'',duration:20,startedAt:0,marks:{}}}));}
+  if(a==='start-boost'){await saveState(Object.assign({},state,{phase:'boost',boost:{active:false,id:'',qid:'',question:'',duration:20,startedAt:0,marks:{},used:[],result:[]}}));}
   if(a==='boost-q')await startBoostQuestion(b.dataset.id);
   if(a==='mark-boost')await markBoost(Number(b.dataset.slot),b.dataset.mark==='true');
   if(a==='close-boost'){const n=Object.assign({},state);n.boost=Object.assign({},state.boost,{active:false});await saveState(n)}
