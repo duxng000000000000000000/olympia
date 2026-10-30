@@ -295,7 +295,9 @@ function renderScreen(){
   const missing=(state.names||[]).map((n,i)=>({n:n,slot:i+1})).filter(x=>!answered.includes(x.slot)).map(x=>'<div class="screen-result-row is-missing"><span class="screen-rank">—</span><span class="screen-player">'+esc(x.n)+'</span><span class="screen-answer">Không gửi đáp án</span><span class="screen-time">—</span><span class="screen-points">0 điểm</span><span class="screen-verdict">VẮNG</span></div>').join('');
   resultPanel='<div class="screen-answer-reveal"><span>ĐÁP ÁN CHÍNH XÁC</span><strong>'+esc(boost.answer||'Chưa có đáp án mẫu')+'</strong></div><div class="screen-results"><div class="screen-results-head"><span>HẠNG</span><span>THÍ SINH</span><span>ĐÁP ÁN ĐÃ GỬI</span><span>TỐC ĐỘ</span><span>ĐIỂM</span><span>KẾT QUẢ</span></div>'+(rows||'')+missing+'</div>';
  }else if(state.phase==='final'&&state.final&&state.final.current){
-  const current=state.final.current;q=current.question;who='<div class="screen-sub">'+esc(state.names[current.slot-1])+' · GÓI '+current.points+' ĐIỂM'+(current.star?' · ⭐ NGÔI SAO HY VỌNG':'')+'</div>';sub=current.status==='steal'?'CƠ HỘI GIÀNH QUYỀN TRẢ LỜI':'Hãy suy nghĩ và đưa ra câu trả lời';timer='<div class="timer" data-timer="final">--</div>';
+   if(current.status==='steal')sub='CƠ HỘI GIÀNH QUYỀN TRẢ LỜI';
+   else if(current.status==='steal-answer')sub='🔔 '+esc(state.names[Number(current.buzzed)-1]||('Thí sinh '+current.buzzed))+' ĐÃ BẤM CHUÔNG NHANH NHẤT · ĐANG TRẢ LỜI';
+   else sub='Hãy suy nghĩ và đưa ra câu trả lời';
  }else if(state.phase==='complete'){q='CHÚC MỪNG CÁC THÍ SINH!';sub='Kết quả chung cuộc';}
  else if(state.phase==='boost'){q='PHẦN THI TĂNG TỐC';sub='MC chuẩn bị câu hỏi tiếp theo'}
  else if(state.phase==='final'){q='PHẦN THI VỀ ĐÍCH';sub='Chờ MC chọn gói câu hỏi'}
