@@ -104,7 +104,8 @@ function saveFinalBank(){localStorage.setItem(FINAL_BANK_KEY,JSON.stringify(fina
 
 let state = null, db = null, auth = null, uid = null, roomCode = initialRoom;
 let cloud = false, joined = false, playerSlot = 0, playerName = '', hostPlayers = {}, submissions = {};
-let stateListener = null, playerListener = null, submissionListener = null, starNext = false;
+let stateListener = null, playerListener = null, submissionListener = null, buzzListener = null, starNext = false;
+let processedBuzzQid = '';
 let timerHandle = null, autoLocking = false;
 
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -148,6 +149,22 @@ function bindHostRoom(){
   render();
  });
  if(state&&state.boost&&state.boost.id)bindSubmissions(state.boost.id);
+ if(buzzListener)buzzListener.off();
+ buzzListener=db.ref(root+'/buzz');
+ buzzListener.on('value',snap=>{
+  const claims=snap.val()||{};
+  const cur=state&&state.final&&state.final.current;
+  if(!cur||cur.status!=='steal'||cur.buzzed)return;
+  const claim=claims[cur.qid];
+  if(!claim||processedBuzzQid===cur.qid)return;
+  processedBuzzQid=cur.qid;
+  const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));
+  next.final.current.buzzed=Number(claim.slot);
+  next.final.current.status='steal-answer';
+  next.final.current.startedAt=Date.now();
+  next.final.current.duration=60;
+  saveState(next).catch(err=>{processedBuzzQid='';console.error(err);toast('Không thể cập nhật người giành chuông: '+err.message)});
+ });
 }
 function bindSubmissions(qid){
  if(!cloud||!db||!roomCode)return;
@@ -395,21 +412,15 @@ async function judgeMain(correct){
 async function buzz(slot){
  if(!state||!state.final||!state.final.current)return;
  if(!Number.isInteger(Number(slot))||Number(slot)<1||Number(slot)>5)return;
- if(cloud&&db&&roomCode){
-  const ref=db.ref('rooms/'+roomCode+'/state');
-  const result=await ref.transaction(raw=>{
-   if(!raw||raw.phase!=='final'||!raw.final||!raw.final.current)return;
-   const c=raw.final.current;
-   if(c.status!=='steal'||c.buzzed||Number(slot)===Number(c.slot))return;
-   c.buzzed=Number(slot);c.status='steal-answer';c.startedAt=Date.now();c.duration=60;
-   raw.updatedAt=Date.now();
-   return raw;
-  });
-  if(!result.committed&&mode==='player')toast('Rất tiếc, người khác đã bấm chuông trước!');
-  else if(result.committed&&mode==='player')toast('Bạn đã giành được quyền trả lời!');
+ const c=state.final.current;
+ if(c.status!=='steal'||c.buzzed||Number(slot)===Number(c.slot))return;
+ if(mode==='player'&&cloud&&db&&roomCode){
+  const ref=db.ref('rooms/'+roomCode+'/buzz/'+c.qid);
+  const result=await ref.transaction(current=>current||{slot:Number(slot),uid:uid,name:playerName,claimedAt:firebase.database.ServerValue.TIMESTAMP});
+  if(result.committed)toast('Đã ghi nhận lượt bấm chuông! Chờ MC xác nhận.');
+  else toast('Rất tiếc, người khác đã bấm chuông trước!');
   return;
  }
- const c=state.final.current;if(c.status!=='steal'||c.buzzed||Number(slot)===Number(c.slot))return;
  const next=Object.assign({},state);next.final=JSON.parse(JSON.stringify(state.final));next.final.current.buzzed=Number(slot);next.final.current.status='steal-answer';next.final.current.startedAt=Date.now();next.final.current.duration=60;await saveState(next);
 }
 async function judgeSteal(correct){
