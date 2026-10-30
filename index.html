@@ -484,7 +484,8 @@ document.addEventListener('click',async e=>{
   if(a==='start-final')await startFinal();
   if(a==='final-package')await chooseFinalPackage(Number(b.dataset.points));
   if(a==='judge-main')await judgeMain(b.dataset.correct==='true');
-  if(a==='buzz')await buzz(Number(b.dataset.slot));\n   if(a==='player-buzz'){b.disabled=true;await buzz(playerSlot)}
+  if(a==='buzz')await buzz(Number(b.dataset.slot));
+   if(a==='player-buzz'){b.disabled=true;await buzz(playerSlot)}
   if(a==='judge-steal')await judgeSteal(b.dataset.correct==='true');
   if(a==='skip-steal'){const n=Object.assign({},state);n.final=JSON.parse(JSON.stringify(state.final));n.final.current.status='done';n.final.current.completed=true;await saveState(n)}
   if(a==='finish-current')await finishCurrent();
